@@ -76,21 +76,42 @@ print 'The corrected codeword does not match transmitted word.'
 
 # the codeword found was 111000, not correct
 
+####### test the bit flip decoder (aka hard decoding) proposed by Gallager
+# From Fundamentals of Error Correcting Codes, Example 15.6.1
+# This is a parity check matrix for a (16,4,3) LDPC code, so 
+# note that there are 4 1's in every row and 3 1's in every column.
+# We will get this from a generator function later, but for now, just
+# use this example from the text
 
+H = array([[1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	       [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+	       [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+	       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+	       [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+	       [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+	       [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+	       [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+	       [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+	       [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+	       [0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+	       [0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
 
+maxIterations = 20
+print '\n\nBit flip algorithm test:'
 
+receivedCodeword = array([0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0])
+print '\nExample part a:'
+bitFlipDecoder(maxIterations,H,receivedCodeword)
+# the solution should be: 1100101001100000. Two errors corrected.
 
+receivedCodeword = array([1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+print '\nExample part b:'
+bitFlipDecoder(maxIterations,H,receivedCodeword)
+# the solution should be: 1100101001100000. Two errors corrected
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+receivedCodeword = array([0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0])
+print '\nExample part c:'
+bitFlipDecoder(maxIterations,H,receivedCodeword)
+# this received word will cause the function to get caught in a loop of 
+# flipping the same bits back and forth. No solution will be reached, even
+# if maxIterations is raised.
