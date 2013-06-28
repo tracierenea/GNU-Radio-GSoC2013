@@ -77,8 +77,9 @@ print 'The corrected codeword does not match transmitted word.'
 # the codeword found was 111000, not correct
 
 ####### test the bit flip decoder (aka hard decoding) proposed by Gallager
+
 # From Fundamentals of Error Correcting Codes, Example 15.6.1
-# This is a parity check matrix for a (16,4,3) LDPC code, so 
+# This is a parity check matrix for a (16,3,4) LDPC code, so 
 # note that there are 4 1's in every row and 3 1's in every column.
 # We will get this from a generator function later, but for now, just
 # use this example from the text
@@ -115,3 +116,22 @@ bitFlipDecoder(maxIterations,H,receivedCodeword)
 # this received word will cause the function to get caught in a loop of 
 # flipping the same bits back and forth. No solution will be reached, even
 # if maxIterations is raised.
+
+####### test the regular LDPC code constructor
+print 'Test 1 - (20,3,4) code:'
+H = regularLDPCcodeConstructor(20,3,4)
+print H
+
+print '\nTest 2 - (16,4,3) code:'
+H = regularLDPCcodeConstructor(16,3,4)
+print H
+
+# This one should return an error
+print '\nTest 3 - (16,3,3) code:'
+H = regularLDPCcodeConstructor(16,3,3)
+print H
+
+print '\nTest 4 - (1000,10,20) code:'
+H = regularLDPCcodeConstructor(1000,10,20)
+print H
+print H.shape

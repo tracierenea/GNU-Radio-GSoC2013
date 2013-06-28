@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 from numpy import *
+from numpy.random import shuffle
+from numpy.linalg import inv, det
 
 verbose = 1
 
@@ -123,3 +125,86 @@ def bitFlipDecoder(maxIterations, H, codeword):
 			print 'has been reached without finding valid codeword.',
 			print 'Returning received codeword.'
 		return receivedCodeword
+
+
+def regularLDPCcodeConstructor(n,p,q):
+	# n = codeword length
+	# p = column weight
+	# q = row weight
+
+	# Following Gallager's approach where we create p submatrices. 
+	# Reference: Turbo Coding for Satellite and Wireless Communications, sec 9.3
+
+	# for this algorithm, n/p must be an integer, because we need the
+	# number of rows in eacn submatrix to be a whole number
+	ratioTest = (n*1.0)/q
+	if ratioTest%1 != 0:
+		print 'The ratio of inputs n/q must be a whole number.'
+		return
+
+	# FIX: There should probably be other guidelines for n/p/q,
+	# but I have not found any specifics in the literature....
+
+	# First one first: 
+	m = (n*p)/q  # number of rows in H matrix
+	submatrix1 = zeros((m/p,n))  
+
+	for row in arange(m/p):
+		range1 = n-(row+1)*q
+		range2 = n-row*q
+		submatrix1[row,range1:range2] = 1
+		# originally I had the 1s going top to bottom, but then you 
+		# get stuck with a singular C2 matrix. Not sure yet why all the 
+		# books have it that way...
+
+	H = submatrix1
+
+	# create the other submatrices and vertically stack them on
+	submatrixNum = 2
+	newColumnOrder = arange(n)
+
+	while submatrixNum <= p:
+		submatrix = zeros((m/p,n))
+		shuffle(newColumnOrder)
+
+		for columnNum in arange(n):
+			submatrix[:,columnNum] = submatrix1[:,newColumnOrder[columnNum]]
+
+		H = vstack((H,submatrix))
+
+		submatrixNum = submatrixNum + 1 
+
+	# double check the row weight and column weights
+	size = H.shape
+	rows = size[0]
+	cols = size[1]
+
+	# check the row weights
+	for rowNum in arange(rows):
+		nonzeros = array(H[rowNum,:].nonzero())
+		if nonzeros.shape[1] != q:
+			print 'Row', rowNum, 'has incorrect weight!'
+			return
+
+	# check the column weights
+	for columnNum in arange(cols):
+		nonzeros = array(H[:,columnNum].nonzero())
+		if nonzeros.shape[1] != p:
+			print 'Row', columnNum, 'has incorrect weight!'
+			return
+
+	# At this point, we can use this matrix for parity checks, 
+	# but it is not in systematic form so it can't be used
+	# to find the parity matrix P, and therefore can't be used
+	# for encoding via the generation matrix. 
+
+	# Putting H into its systematic form requires row operations. 
+	# I cannot figure out how to write this into an algorithm for
+	# matrices of unknown size, and also using mod 2 operations.
+	# <in work....>
+
+	# There are some published steps that require taking the 
+	# determinant but taking the determinant of a huge matrix
+	# won't work.....
+
+	return H
