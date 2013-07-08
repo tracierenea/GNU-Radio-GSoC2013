@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from numpy import *
-from numpy.random import shuffle
+from numpy.random import shuffle, randint
 from numpy.linalg import inv, det
 
 verbose = 1
@@ -208,3 +208,100 @@ def regularLDPCcodeConstructor(n,p,q):
 	# won't work.....
 
 	return H
+
+def greedyUpperTriangulation(H):
+	# This function performs row/column permutations to bring
+	# H into approximate upper triangular form via greedy 
+	# upper triangulation method outlined in Modern Coding 
+	# Theory Appendix 1, Section A.2
+	H_t  = H.copy()
+	size = H_t.shape
+	n = size[1]
+	k = n - size[0]
+	g = t = 0
+	while t != (n-k-g):
+		H_residual = H_t[t:n-k-g,t:n]
+		size       = H_residual.shape
+		numRows    = size[0]
+		numCols    = size[1]
+
+		minResidualDegrees = zeros((1,numCols))
+
+		for colNum in arange(numCols):
+			nonZeroElements = array(H_residual[:,colNum].nonzero())
+			minResidualDegrees[0,colNum] = nonZeroElements.shape[1]
+
+		minimumResidualDegree = minResidualDegrees.min()
+		if minimumResidualDegree == 0:
+			if any(minResidualDegrees):
+				minimumResidualDegree = 1
+
+		# get indices of all of the columns in H_t that have degree
+		# equal to the min positive residual degree, then pick at
+		# random column c
+		indices = (minResidualDegrees == minimumResidualDegree).nonzero()[1]
+		if indices.shape[0] == 1:
+			columnC = indices[0]
+		else:
+			randomIndex = randint(0,indices.shape[0],(1,1))[0][0]
+			columnC = indices[randomIndex]
+
+		if minimumResidualDegree == 1:
+			rowThatContainsNonZero = H_residual[:,columnC].nonzero()[0][0]
+			Htemp = H_t.copy()
+			
+			# swap column c with column t (book says t+1 but we index from 0, not 1)
+			Htemp[:,columnC+t] = H_t[:,t]
+			Htemp[:,t] = H_t[:,columnC+t]
+			H_t = Htemp.copy()
+			Htemp = H_t.copy()
+			# swap row r with row t (book says t+1 but we index from 0, not 1)
+			Htemp[rowThatContainsNonZero + t,:] = H_t[t,:]
+			Htemp[t,:] = H_t[rowThatContainsNonZero + t,:]
+			H_t = Htemp.copy()
+			Htemp = H_t.copy()
+		else:
+			rowsThatContainNonZeros = H_residual[:,columnC].nonzero()[0]
+			Htemp = H_t.copy()
+			# swap column c with column t (book says t+1 but we index from 0, not 1)
+			Htemp[:,columnC+t] = H_t[:,t]
+			Htemp[:,t] = H_t[:,columnC+t]
+			H_t = Htemp.copy()
+			Htemp = H_t.copy()
+
+			# swap row r1 with row t
+			r1 = rowsThatContainNonZeros[0]
+			Htemp[r1,:] = H_t[t,:]
+			Htemp[t,:] = H_t[r1,:]
+			numRowsLeft = rowsThatContainNonZeros.shape[0]-1
+
+			# move the other rows that contain nonZero entries to the
+			# bottom of the matrix
+			for index in arange (1,numRowsLeft+1):
+				rowInH_residual = rowsThatContainNonZeros[index]
+				
+				if (k-(rowInH_residual+t)) <= numRowsLeft:
+					# this row is already at the bottom
+					continue
+				else: 
+
+					tempIndex = index
+					possibleBottomIndex = k-tempIndex
+					while Htemp[possibleBottomIndex,t] == 1:
+						tempIndex = tempIndex+1
+						possibleBottomIndex = k-tempIndex
+					bottomRow = possibleBottomIndex			
+					Htemp[bottomRow,:] = H_t[rowInH_residual+t,:]
+					Htemp[rowInH_residual+t,:] = H_t[bottomRow,:]
+				H_t = Htemp.copy()
+				Htemp = H_t.copy()
+
+			# save temp H as new H_t
+			H_t = Htemp.copy()
+			Htemp = H_t.copy()
+			g = g + (minimumResidualDegree - 1)
+
+		t = t + 1
+
+	return H_t
+	# FIX will also need to return gap (g) and parameter t
