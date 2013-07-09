@@ -240,19 +240,22 @@ def greedyUpperTriangulation(H):
 		# equal to the min positive residual degree, then pick at
 		# random column c
 		indices = (minResidualDegrees == minimumResidualDegree).nonzero()[1]
+		indices = indices + t
 		if indices.shape[0] == 1:
 			columnC = indices[0]
 		else:
 			randomIndex = randint(0,indices.shape[0],(1,1))[0][0]
 			columnC = indices[randomIndex]
 
-		if minimumResidualDegree == 1:
-			rowThatContainsNonZero = H_residual[:,columnC].nonzero()[0][0]
 			Htemp = H_t.copy()
+
+		if minimumResidualDegree == 1:
+			# This is the 'extend' case
+			rowThatContainsNonZero = H_residual[:,columnC-t].nonzero()[0][0]
 			
 			# swap column c with column t (book says t+1 but we index from 0, not 1)
-			Htemp[:,columnC+t] = H_t[:,t]
-			Htemp[:,t] = H_t[:,columnC+t]
+			Htemp[:,columnC] = H_t[:,t]
+			Htemp[:,t] = H_t[:,columnC]
 			H_t = Htemp.copy()
 			Htemp = H_t.copy()
 			# swap row r with row t (book says t+1 but we index from 0, not 1)
@@ -261,38 +264,38 @@ def greedyUpperTriangulation(H):
 			H_t = Htemp.copy()
 			Htemp = H_t.copy()
 		else:
-			rowsThatContainNonZeros = H_residual[:,columnC].nonzero()[0]
-			Htemp = H_t.copy()
+			# This is the 'choose' case
+			rowsThatContainNonZeros = H_residual[:,columnC-t].nonzero()[0]
+			
 			# swap column c with column t (book says t+1 but we index from 0, not 1)
-			Htemp[:,columnC+t] = H_t[:,t]
-			Htemp[:,t] = H_t[:,columnC+t]
+			Htemp[:,columnC] = H_t[:,t]
+			Htemp[:,t] = H_t[:,columnC]
 			H_t = Htemp.copy()
 			Htemp = H_t.copy()
 
 			# swap row r1 with row t
 			r1 = rowsThatContainNonZeros[0]
-			Htemp[r1,:] = H_t[t,:]
-			Htemp[t,:] = H_t[r1,:]
+			Htemp[r1+t,:] = H_t[t,:]
+			Htemp[t,:] = H_t[r1+t,:]
 			numRowsLeft = rowsThatContainNonZeros.shape[0]-1
+			H_t = Htemp.copy()
+			Htemp = H_t.copy()
 
 			# move the other rows that contain nonZero entries to the
-			# bottom of the matrix
+			# bottom of the matrix. We can't just swap them, otherwise
+			# we will be pulling up rows that we pushed down before. 
+			# So, use a rotation method
 			for index in arange (1,numRowsLeft+1):
 				rowInH_residual = rowsThatContainNonZeros[index]
-				
-				if (k-(rowInH_residual+t)) <= numRowsLeft:
-					# this row is already at the bottom
-					continue
-				else: 
-
-					tempIndex = index
-					possibleBottomIndex = k-tempIndex
-					while Htemp[possibleBottomIndex,t] == 1:
-						tempIndex = tempIndex+1
-						possibleBottomIndex = k-tempIndex
-					bottomRow = possibleBottomIndex			
-					Htemp[bottomRow,:] = H_t[rowInH_residual+t,:]
-					Htemp[rowInH_residual+t,:] = H_t[bottomRow,:]
+				rowInH_t = rowInH_residual + t - index +1
+				m = n-k
+				# move the row with the nonzero element to the bottom; don't update H_t
+				Htemp[m-1,:] = H_t[rowInH_t,:] 
+				# now rotate the bottom rows up
+				sub_index = 1
+				while sub_index < (m - rowInH_t):
+					Htemp[m-sub_index-1,:] = H_t[m-sub_index,:]
+					sub_index = sub_index+1
 				H_t = Htemp.copy()
 				Htemp = H_t.copy()
 
@@ -303,5 +306,4 @@ def greedyUpperTriangulation(H):
 
 		t = t + 1
 
-	return H_t
-	# FIX will also need to return gap (g) and parameter t
+	return [H_t, g, t]
