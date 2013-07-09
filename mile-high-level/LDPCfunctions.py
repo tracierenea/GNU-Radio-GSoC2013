@@ -231,10 +231,10 @@ def greedyUpperTriangulation(H):
 			nonZeroElements = array(H_residual[:,colNum].nonzero())
 			minResidualDegrees[0,colNum] = nonZeroElements.shape[1]
 
-		minimumResidualDegree = minResidualDegrees.min()
-		if minimumResidualDegree == 0:
-			if any(minResidualDegrees):
-				minimumResidualDegree = 1
+		# find the minimum nonzero residual degree
+		nonZeroElementIndices = minResidualDegrees.nonzero()
+		nonZeroElements = minResidualDegrees[nonZeroElementIndices[0],nonZeroElementIndices[1]]
+		minimumResidualDegree = nonZeroElements.min()
 
 		# get indices of all of the columns in H_t that have degree
 		# equal to the min positive residual degree, then pick at
