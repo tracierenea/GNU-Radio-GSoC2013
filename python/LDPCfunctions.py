@@ -6,7 +6,7 @@ from numpy.linalg import inv, det
 
 verbose = 1
 
-# FIX - I need to go in an specify argument size constraints
+# FIXME - I need to go in an specify argument size constraints
 # to ensure that the matrix multiplication works correctly. 
 
 def matrixMultiplierEncoder(H,A):
