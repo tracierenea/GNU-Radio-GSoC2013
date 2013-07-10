@@ -88,14 +88,15 @@ def bitFlipDecoder(maxIterations, H, codeword):
 		if verbose: print 'Iteration:', iteration
 
 		# For each of the n bits in the codeword, determine how many
-		# of the unsatisfied parity checks involve that bit. To do this: 
-
-		# First find the nonzero entries in the syndrome. The entry numbers 
-		# correspond to rows of interest in H.
+		# of the unsatisfied parity checks involve that bit. To do 
+		# this: 
+		# First find the nonzero entries in the syndrome. The entry 
+		# numbers correspond to rows of interest in H.
 		rowsToLookAtInH = array(nonzero(syndrome)) 
 
-		# Second, for each bit, determine how many of unsatisfied parity 
-		# checks involve this bit and store this count in an array. 
+		# Second, for each bit, determine how many of unsatisfied 
+		# parity checks involve this bit and store this count in an 
+		# array. 
 		counts = zeros_like(receivedCodeword)
 
 		for row in rowsToLookAtInH.transpose():
@@ -109,12 +110,14 @@ def bitFlipDecoder(maxIterations, H, codeword):
 		bitsToFlip = where(counts==counts.max())
 		for bitNumber in bitsToFlip[0]:
 			if verbose: print 'We need to flip bit:', bitNumber
-			testCodeword[bitNumber] = bitwise_xor(testCodeword[bitNumber],1)
+			testCodeword[bitNumber] = bitwise_xor\
+			                          (testCodeword[bitNumber],1)
 
 		if verbose: print 'New codeword candidate: ',testCodeword
 		syndrome = calcSyndrome(H,testCodeword)
 		if haveMatch(syndrome):
-			if verbose: print 'Codeword declared to be:', testCodeword
+			if verbose: 
+				print 'Codeword declared to be:', testCodeword
 			return testCodeword
 		else:
 			iteration = iteration + 1
@@ -133,7 +136,8 @@ def regularLDPCcodeConstructor(n,p,q):
 	# q = row weight
 
 	# Following Gallager's approach where we create p submatrices. 
-	# Reference: Turbo Coding for Satellite and Wireless Communications, sec 9.3
+	# Reference: Turbo Coding for Satellite and Wireless 
+	# Communications, sec 9.3
 
 	# for this algorithm, n/p must be an integer, because we need the
 	# number of rows in eacn submatrix to be a whole number
@@ -154,8 +158,8 @@ def regularLDPCcodeConstructor(n,p,q):
 		range2 = n-row*q
 		submatrix1[row,range1:range2] = 1
 		# originally I had the 1s going top to bottom, but then you 
-		# get stuck with a singular C2 matrix. Not sure yet why all the 
-		# books have it that way...
+		# get stuck with a singular C2 matrix. Not sure yet why all 
+		# the books have it that way...
 
 	H = submatrix1
 
@@ -168,7 +172,8 @@ def regularLDPCcodeConstructor(n,p,q):
 		shuffle(newColumnOrder)
 
 		for columnNum in arange(n):
-			submatrix[:,columnNum] = submatrix1[:,newColumnOrder[columnNum]]
+			submatrix[:,columnNum] = \
+			                  submatrix1[:,newColumnOrder[columnNum]]
 
 		H = vstack((H,submatrix))
 
@@ -233,13 +238,15 @@ def greedyUpperTriangulation(H):
 
 		# find the minimum nonzero residual degree
 		nonZeroElementIndices = minResidualDegrees.nonzero()
-		nonZeroElements = minResidualDegrees[nonZeroElementIndices[0],nonZeroElementIndices[1]]
+		nonZeroElements=minResidualDegrees[nonZeroElementIndices[0],\
+		                                   nonZeroElementIndices[1]]
 		minimumResidualDegree = nonZeroElements.min()
 
 		# get indices of all of the columns in H_t that have degree
 		# equal to the min positive residual degree, then pick at
 		# random column c
-		indices = (minResidualDegrees == minimumResidualDegree).nonzero()[1]
+		indices = (minResidualDegrees == minimumResidualDegree)\
+		                                 .nonzero()[1]
 		indices = indices + t
 		if indices.shape[0] == 1:
 			columnC = indices[0]
@@ -251,23 +258,28 @@ def greedyUpperTriangulation(H):
 
 		if minimumResidualDegree == 1:
 			# This is the 'extend' case
-			rowThatContainsNonZero = H_residual[:,columnC-t].nonzero()[0][0]
+			rowThatContainsNonZero = H_residual[:,columnC-t]\
+			                                   .nonzero()[0][0]
 			
-			# swap column c with column t (book says t+1 but we index from 0, not 1)
+			# swap column c with column t (book says t+1 but we 
+			# index from 0, not 1)
 			Htemp[:,columnC] = H_t[:,t]
 			Htemp[:,t] = H_t[:,columnC]
 			H_t = Htemp.copy()
 			Htemp = H_t.copy()
-			# swap row r with row t (book says t+1 but we index from 0, not 1)
+			# swap row r with row t (book says t+1 but we index from 
+			# 0, not 1)
 			Htemp[rowThatContainsNonZero + t,:] = H_t[t,:]
 			Htemp[t,:] = H_t[rowThatContainsNonZero + t,:]
 			H_t = Htemp.copy()
 			Htemp = H_t.copy()
 		else:
 			# This is the 'choose' case
-			rowsThatContainNonZeros = H_residual[:,columnC-t].nonzero()[0]
+			rowsThatContainNonZeros = H_residual[:,columnC-t]\
+			                                    .nonzero()[0]
 			
-			# swap column c with column t (book says t+1 but we index from 0, not 1)
+			# swap column c with column t (book says t+1 but we 
+			# index from 0, not 1)
 			Htemp[:,columnC] = H_t[:,t]
 			Htemp[:,t] = H_t[:,columnC]
 			H_t = Htemp.copy()
@@ -282,14 +294,15 @@ def greedyUpperTriangulation(H):
 			Htemp = H_t.copy()
 
 			# move the other rows that contain nonZero entries to the
-			# bottom of the matrix. We can't just swap them, otherwise
-			# we will be pulling up rows that we pushed down before. 
-			# So, use a rotation method
+			# bottom of the matrix. We can't just swap them, 
+			# otherwise we will be pulling up rows that we pushed 
+			# down before. So, use a rotation method.
 			for index in arange (1,numRowsLeft+1):
 				rowInH_residual = rowsThatContainNonZeros[index]
 				rowInH_t = rowInH_residual + t - index +1
 				m = n-k
-				# move the row with the nonzero element to the bottom; don't update H_t
+				# move the row with the nonzero element to the 
+				# bottom; don't update H_t
 				Htemp[m-1,:] = H_t[rowInH_t,:] 
 				# now rotate the bottom rows up
 				sub_index = 1
