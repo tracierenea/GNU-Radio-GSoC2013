@@ -320,3 +320,14 @@ def greedyUpperTriangulation(H):
 		t = t + 1
 
 	return [H_t, g, t]
+
+def invTmod2(T):
+	invT = inv(T)
+	temp = det(T)*invT
+	invTmod2 = temp % 2
+	t = T.shape[0]
+
+	if ((dot(T,invTmod2) % 2) - eye(t,t)).any():
+		print 'Error in mod 2 inverse calculation!'
+	else:
+		return invTmod2
