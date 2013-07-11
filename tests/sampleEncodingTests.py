@@ -53,7 +53,16 @@ a = vstack((T,E))
 b = vstack((A,C))
 c = vstack((B,D))
 TABECDmatrix = hstack((a,b,c))
-print TABECDmatrix
+print 'TABECD matrix:\n', TABECDmatrix
+
+temp1 = dot(E,invTmod2) % 2
+temp2 = dot(temp1,A) % 2
+phi   = (C - temp2) % 2
+print 'phi:\n', phi
+
+# phi keeps coming out as a matrix of zeros, which is not good...
+# phi needs to be nonsingular to continue...
+
 
 ############ this is all real-time encoding #########################
 
