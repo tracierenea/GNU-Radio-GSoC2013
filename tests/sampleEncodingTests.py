@@ -68,11 +68,36 @@ c = vstack((B,D))
 TABECDmatrix = hstack((a,b,c))
 print 'TABECD matrix:\n', TABECDmatrix
 
-temp1 = dot(E,invTmod2array) % 2
-temp2 = dot(temp1,A) % 2
-phi   = (C - temp2) % 2
+temp1  = dot(E,invTmod2array) % 2
+temp2  = dot(temp1,A) % 2
+phi    = (C - temp2) % 2
 print 'phi:\n', phi
+invPhi = invMod2(phi)
 
 ############ this is all real-time encoding #########################
 
-# in work
+# Problem A.1 gives this s (systematic part of the vector)
+s = array([0, 1, 0, 0, 0, 0])
+
+# compute p1 (this method has lowest complexity)
+a = dot(B,s) % 2
+b = dot(invTmod2array,a) % 2
+c = dot(E,b) % 2
+d = dot(D,s) % 2
+e = d + c % 2
+p2 = dot(invPhi,e) % 2
+print 'p2:', p2
+
+# compute p2 (this method has lowest complexity)
+a = dot(A, p2) % 2
+b = dot(B, s) % 2
+c = a + b % 2
+p1 = dot(invTmod2array,c) % 2
+print 'p1:', p1
+
+# concatenate to get x
+x = hstack((p1, p2, s))
+print 'x:', x
+
+# verify:
+print 'Zeros?:', dot(betterH,x) % 2
