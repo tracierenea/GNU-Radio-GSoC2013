@@ -28,51 +28,46 @@ print 'H:\n', H
 
 ############ this is all preprocessing #############################
 print 'Running permutation algorithm 100 times to ensure the lowest',
-print ' gap is found.'
-[betterH, g, t]  = greedyUpperTriangulation(H)
+print '\ngap is found and the resulting phi is nonsingular.'
+
+# set this arbitrarily high to force whole loop on first run
+g = 10**10
 
 for index in arange(100):
  	[temp_H, temp_g, temp_t]  = greedyUpperTriangulation(H)
+
  	if temp_g < g:
- 		betterH = temp_H
- 		g = temp_g
- 		t = temp_t
+ 		n = temp_H.shape[1]
+		T = temp_H[0:temp_t, 0:temp_t]
+		E = temp_H[temp_t:temp_t+temp_g,0:temp_t]
+		A = temp_H[0:temp_t,temp_t:temp_t+temp_g]
+		C = temp_H[temp_t:temp_t+temp_g,temp_t:temp_t+temp_g]
+		B = temp_H[0:temp_t,temp_t+temp_g:n]
+		D = temp_H[temp_t:temp_t+temp_g,temp_t+temp_g:n]
+		invTmod2array = invMod2(T)
+		temp1  = dot(E,invTmod2array) % 2
+		temp2  = dot(temp1,A) % 2
+		phi    = (C - temp2) % 2
+		try:
+			# try to take the inverse of phi
+			invPhi = invMod2(phi)
+		except linalg.linalg.LinAlgError:
+			# phi is singular
+			continue
+		else:
+			# phi is nonsingular, so this is our new candidate
+			betterH = temp_H.copy()
+			g = temp_g
+ 			t = temp_t
+
+# a = vstack((T,E))
+# b = vstack((A,C))
+# c = vstack((B,D))
+# TABECDmatrix = hstack((a,b,c))
+# print 'TABECD matrix:\n', TABECDmatrix
+
 print 'Using this H matrix:\n', betterH
-print H.shape
 print '  with gap g:', g, 'and t =', t
-n = betterH.shape[1]
-T = betterH[0:t  , 0:t]
-E = betterH[t:t+g, 0:t]
-A = betterH[0:t  , t:t+g]
-C = betterH[t:t+g, t:t+g]
-B = betterH[0:t,   t+g:n]
-D = betterH[t:t+g, t+g:n]
-
-print 'So the square and upper triangular T matrix is:\n', T
-print 'The other submatrices are:'
-print 'E:\n', E
-print E.shape
-print 'A:\n', A
-print A.shape
-print 'C:\n', C
-print C.shape
-print 'B:\n', B
-print B.shape
-print 'D:\n', D
-print D.shape
-
-invTmod2array = invMod2(T)
-a = vstack((T,E))
-b = vstack((A,C))
-c = vstack((B,D))
-TABECDmatrix = hstack((a,b,c))
-print 'TABECD matrix:\n', TABECDmatrix
-
-temp1  = dot(E,invTmod2array) % 2
-temp2  = dot(temp1,A) % 2
-phi    = (C - temp2) % 2
-print 'phi:\n', phi
-invPhi = invMod2(phi)
 
 ############ this is all real-time encoding #########################
 
@@ -100,4 +95,4 @@ x = hstack((p1, p2, s))
 print 'x:', x
 
 # verify:
-print 'Zeros?:', dot(betterH,x) % 2
+print 'This should be zeros:', dot(betterH,x) % 2
