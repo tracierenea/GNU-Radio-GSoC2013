@@ -106,7 +106,7 @@ def bitFlipDecoder(maxIterations, H, codeword):
 
 		# Next, determine which bit(s) is associated with the most 
 		# unsatisfied parity checks, and flip it/them
-		print 'counts:', counts
+		if verbose: print 'counts:', counts
 		bitsToFlip = where(counts==counts.max())
 		for bitNumber in bitsToFlip[0]:
 			if verbose: print 'We need to flip bit:', bitNumber
@@ -328,6 +328,9 @@ def invMod2(squareMatrix):
 	t = squareMatrix.shape[0]
 
 	if ((dot(squareMatrix,invMod2array) % 2) - eye(t,t)).any():
-		print 'Error in mod 2 inverse calculation!'
+		if verbose:print 'Error in mod 2 inverse calculation! Det =',
+		if verbose: print det(squareMatrix) % 2
+		# FIXME is this the most appropriate error to raise?
+		raise linalg.linalg.LinAlgError
 	else:
 		return invMod2array
