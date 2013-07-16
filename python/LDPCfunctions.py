@@ -154,12 +154,17 @@ def regularLDPCcodeConstructor(n,p,q):
 	submatrix1 = zeros((m/p,n))  
 
 	for row in arange(m/p):
-		range1 = n-(row+1)*q
-		range2 = n-row*q
+
+		# these lines have the ones going from bottom to top, left
+		# to right across the matrix. Switching to top to bottom, 
+		# left to right, because I think it will be faster to then
+		# convert it to systematic form
+		# range1 = n-(row+1)*q
+		# range2 = n-row*q
+
+		range1 = row*q
+		range2 = (row+1)*q 
 		submatrix1[row,range1:range2] = 1
-		# originally I had the 1s going top to bottom, but then you 
-		# get stuck with a singular C2 matrix. Not sure yet why all 
-		# the books have it that way...
 
 	H = submatrix1
 
@@ -334,3 +339,82 @@ def invMod2(squareMatrix):
 		raise linalg.linalg.LinAlgError
 	else:
 		return invMod2array
+
+def swapColumns(a,b,arrayIn):
+	arrayOut = arrayIn.copy()
+	arrayOut[:,a] = arrayIn[:,b]
+	arrayOut[:,b] = arrayIn[:,a]
+	return arrayOut
+
+def moveRowToBottom(i,arrayIn):
+	arrayOut = arrayIn.copy()
+	numRows = arrayOut.shape[0]
+	# push the specified row to the bottom
+	arrayOut[numRows-1] = arrayIn[i,:]
+	# now rotate the bottom rows up
+	index = 2
+	while (numRows-index) >= i:
+		arrayOut[numRows-index,:] = arrayIn[numRows-index+1]
+		index = index + 1
+	return arrayOut
+
+def getSystematicGmatrix(H):
+	tempArray = H.copy()
+	numRows = tempArray.shape[0]
+	numColumns = tempArray.shape[1] 
+	limit = numRows
+	rank = 0
+	i = 0
+
+	while i < limit: 
+		# Flag indicating that the row contains a non-zero entry
+		found  = False
+		for j in arange(i, numColumns):
+			if tempArray[i, j] == 1: 
+				# Encountered a non-zero entry at (i, j)
+				found =  True 
+				# Increment rank by 1
+				rank = rank + 1       
+				tempArray = swapColumns(j,i,tempArray)  
+				# Now the entry at (i, i) is 1
+				break
+		if found == True:
+			for k in arange(0,numRows): 
+				if k == i: continue
+				# Checking for 1's 
+				if tempArray[k, i] == 1:
+					#add row i to row k
+					tempArray[k,:] = tempArray[k,:] + tempArray[i,:]
+					# Addition is mod2
+					tempArray = tempArray.copy() % 2 
+					# All the entries above & below (i, i) are now 0 
+			i = i + 1
+		if found == False:
+			# push the row of 0s to the bottom, and move the bottom
+			# rows up (sort of a rotation thing)
+			tempArray = moveRowToBottom(i,tempArray)
+			# decrease limit since we just found a row of 0s
+			limit -= 1 
+
+	G =  tempArray[0:i,:]
+	if verbose: 
+		print 'This is the useful part, G:\n', G
+		print 'G.shape:', G.shape
+		print 'rank:', rank
+		print 'The redundant junk left on the bottom was size:'
+		print tempArray[i:numRows,:].shape
+	return G
+
+def printArrayToFile(arrayName,filename):
+	numRows = arrayName.shape[0]
+	numColumns = arrayName.shape[1]
+	myfile = open(filename,'w')
+	for row in arange(numRows):
+		for col in arange(numColumns):
+			element = arrayName[row,col].astype(int)
+			tempstring = `element` + ' '
+			myfile.write(tempstring)
+		myfile.write('\n')
+	myfile.close()
+
+
