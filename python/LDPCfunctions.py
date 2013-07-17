@@ -259,7 +259,8 @@ def greedyUpperTriangulation(H):
 			randomIndex = randint(0,indices.shape[0],(1,1))[0][0]
 			columnC = indices[randomIndex]
 
-			Htemp = H_t.copy()
+			#Htemp = H_t.copy()
+		Htemp = H_t.copy()
 
 		if minimumResidualDegree == 1:
 			# This is the 'extend' case
@@ -366,6 +367,13 @@ def getSystematicGmatrix(H):
 	rank = 0
 	i = 0
 
+	# create an array to save the column permutations
+	columnOrder = arange(numColumns).reshape(1,numColumns)
+
+	# create an array to save the row permutations. we just need
+	# this to know which dependent rows to delete
+	rowOrder = arange(numRows).reshape(numRows,1)
+
 	while i < limit: 
 		# Flag indicating that the row contains a non-zero entry
 		found  = False
@@ -374,16 +382,18 @@ def getSystematicGmatrix(H):
 				# Encountered a non-zero entry at (i, j)
 				found =  True 
 				# Increment rank by 1
-				rank = rank + 1       
+				rank = rank + 1    
+				# make the entry at (i,i) be 1   
 				tempArray = swapColumns(j,i,tempArray)  
-				# Now the entry at (i, i) is 1
+				# keep track of the column swapping
+				columnOrder = swapColumns(j,i,columnOrder)
 				break
 		if found == True:
 			for k in arange(0,numRows): 
 				if k == i: continue
 				# Checking for 1's 
 				if tempArray[k, i] == 1:
-					#add row i to row k
+					# add row i to row k
 					tempArray[k,:] = tempArray[k,:] + tempArray[i,:]
 					# Addition is mod2
 					tempArray = tempArray.copy() % 2 
@@ -395,15 +405,43 @@ def getSystematicGmatrix(H):
 			tempArray = moveRowToBottom(i,tempArray)
 			# decrease limit since we just found a row of 0s
 			limit -= 1 
+			# keep track of row swapping
+			rowOrder = moveRowToBottom(i,rowOrder)
 
 	G =  tempArray[0:i,:]
+
+	# we don't need the dependent rows
+	finalRowOrder = rowOrder[0:i]
+
 	if verbose: 
-		print 'This is the useful part, G:\n', G
 		print 'G.shape:', G.shape
 		print 'rank:', rank
 		print 'The redundant junk left on the bottom was size:'
 		print tempArray[i:numRows,:].shape
-	return G
+		print 'New column order for H:', columnOrder
+		print 'New row order for H:\n', rowOrder
+		print 'but we can delete these rows from H:\n',
+		print rowOrder[i:numRows]
+		print 'so final row order is:\n', finalRowOrder
+		print finalRowOrder.shape
+
+	# let's reorder H, per the permutations taken above
+	# first, put rows in order, omitting the dependent rows
+	newNumberOfRowsForH = finalRowOrder.shape[0]
+	newH = zeros((newNumberOfRowsForH, numColumns))
+	for index in arange(newNumberOfRowsForH):
+		newH[index,:] = H[finalRowOrder[index],:]
+
+	# next, put the columns in order
+	tempHarray = newH.copy()
+	for index in arange(numColumns):
+		newH[:,index] = tempHarray[:,columnOrder[0,index]]
+
+	if verbose:
+		print 'original H.shape:', H.shape
+		print 'newH.shape:', newH.shape
+		
+	return [G, newH]
 
 def printArrayToFile(arrayName,filename):
 	numRows = arrayName.shape[0]
@@ -416,5 +454,3 @@ def printArrayToFile(arrayName,filename):
 			myfile.write(tempstring)
 		myfile.write('\n')
 	myfile.close()
-
-
