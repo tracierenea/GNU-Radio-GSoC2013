@@ -7,24 +7,25 @@ from numpy.random import random_integers
 # Theory (Richardson/Urbanke). 
 
 # The H matrices created by regularLDPCcodeconstructor are
-# not full rank. Using getSystematicGmatrix to get a version that is
-# full rank, then sending it on to the encoding algorithm 
+# not full rank. Using this simple textbook example just to
+# show that it works if the matrix is full rank.
 
-H = regularLDPCcodeConstructor(1920,4,6)
-# H = regularLDPCcodeConstructor(20,3,4)
+H = array([[0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0],  # 1
+	       [1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0],  # 2
+	       [0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1],  # 3
+	       [0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0],  # 4
+	       [1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1],  # 5
+	       [1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1]]) # 6
 print 'Origiinal H.shape:', H.shape
-printArrayToFile(H,'H_1920_4_6_original.txt')
+printArrayToFile(H,'H_12_3_6_original.txt')
 [G, newH] = getSystematicGmatrix(H)
-printArrayToFile(G,'G_from_1920_4_6_H_matrix.txt')
+printArrayToFile(G,'G_from_12_3_6_H_matrix.txt')
+printArrayToFile(newH,'newH_12_3_6.txt')
 print 'linalg.matrix_rank(newH):', linalg.matrix_rank(newH)
-
-# Hp = newH[0:newH.shape[0],0:newH.shape[0]]
-# print 'Hp.shape:', Hp.shape
-# print 'Inverse of Hp?\n', invMod2(Hp)
 
 ############ this is all preprocessing #############################
 
-numIterations = 20
+numIterations = 10
 print 'Running permutation algorithm', numIterations,
 print 'times to ensure the lowest \ngap is found and the',
 print 'resulting phi is nonsingular.'
@@ -36,9 +37,9 @@ flagFoundBetterH = 0
 for index in arange(numIterations):
  	print '============== Index:', index
 	[betterH, gap, t]  = greedyUpperTriangulation(newH)
+	print 'gap:', gap, ' g:', g
 
 	if gap < g:
-		n = betterH.shape[1]
 		T = betterH[0:t, 0:t]
 		E = betterH[t:t+gap,0:t]
 		A = betterH[0:t,t:t+gap]
@@ -47,6 +48,7 @@ for index in arange(numIterations):
 		temp1  = dot(E,invTmod2array) % 2
 		temp2  = dot(temp1,A) % 2
 		phi    = (C - temp2) % 2
+		print 'phi:\n', phi
 		# if phi is not an empty matrix or a matrix of 0s, press on
 		if phi.any():
 			try:
@@ -62,6 +64,7 @@ for index in arange(numIterations):
 
 				finalH = betterH
 				finalGap = gap
+				g = gap
 				final_t = t
  	else:
  		print 'Gap:', gap, 'is not larger than curent g:', g
@@ -76,7 +79,7 @@ if flagFoundBetterH:
 	n = finalH.shape[1]
 	k = n - finalH.shape[0]  
 	s = random_integers(0,1,k).reshape(k,1)
-	print 's, filled with k=', k, 'random information bits:\n'
+	print 's, filled with k=', k, 'random information bits:\n',s
 	print 's.shape:', s.shape
 
 	T = finalH[0:final_t, 0:final_t]
