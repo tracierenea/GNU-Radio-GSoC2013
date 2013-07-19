@@ -30,8 +30,7 @@ flagFoundBetterH = 0
 
 for index in arange(numIterations):
  	print '============== Index:', index
-	[betterH, gap, t]  = greedyUpperTriangulation(newH)
-	print 'gap:', gap, ' g:', g
+	[betterH, gap, t]  = greedyUpperTriangulation(H)
 
 	if gap < g:
 		T = betterH[0:t, 0:t]
@@ -60,8 +59,6 @@ for index in arange(numIterations):
 				finalGap = gap
 				g = gap
 				final_t = t
- 	else:
- 		print 'Gap:', gap, 'is not larger than curent g:', g
 
 if flagFoundBetterH: 
 	print 'New H matrix has gap g:', finalGap, 'and t =', final_t
@@ -99,6 +96,7 @@ if flagFoundBetterH:
 
 	# concatenate to get codeword x
 	x = vstack((p1, p2, s))
+	print 'Codeword size:', x.shape
 
 	# verify:
 	testArray = dot(finalH,x) % 2
