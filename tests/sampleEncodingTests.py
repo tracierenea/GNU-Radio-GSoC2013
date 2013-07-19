@@ -16,12 +16,6 @@ H = array([[0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0],  # 1
 	       [0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0],  # 4
 	       [1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1],  # 5
 	       [1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1]]) # 6
-print 'Origiinal H.shape:', H.shape
-printArrayToFile(H,'H_12_3_6_original.txt')
-[G, newH] = getSystematicGmatrix(H)
-printArrayToFile(G,'G_from_12_3_6_H_matrix.txt')
-printArrayToFile(newH,'newH_12_3_6.txt')
-print 'linalg.matrix_rank(newH):', linalg.matrix_rank(newH)
 
 ############ this is all preprocessing #############################
 
