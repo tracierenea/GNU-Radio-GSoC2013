@@ -362,6 +362,14 @@ def moveRowToBottom(i,arrayIn):
 def getSystematicGmatrix(H):
 	tempArray = H.copy()
 	numRows = tempArray.shape[0]
+	if linalg.matrix_rank(tempArray) != numRows:
+		if verbose: 
+			print 'Rank of H:',linalg.matrix_rank(tempArray)
+			print 'H.shape:', H.shape
+			print 'H must be full rank.',
+			print 'G matrix not generated.'
+		return
+
 	numColumns = tempArray.shape[1] 
 	limit = numRows
 	rank = 0
@@ -370,11 +378,8 @@ def getSystematicGmatrix(H):
 	# create an array to save the column permutations
 	columnOrder = arange(numColumns).reshape(1,numColumns)
 
-	# create an array to save the row permutations. we just need
-	# this to know which dependent rows to delete
-	rowOrder = arange(numRows).reshape(numRows,1)
-
 	while i < limit: 
+		if verbose: print 'index i =',i
 		# Flag indicating that the row contains a non-zero entry
 		found  = False
 		for j in arange(i, numColumns):
@@ -400,47 +405,23 @@ def getSystematicGmatrix(H):
 					# All the entries above & below (i, i) are now 0 
 			i = i + 1
 		if found == False:
-			# push the row of 0s to the bottom, and move the bottom
-			# rows up (sort of a rotation thing)
-			tempArray = moveRowToBottom(i,tempArray)
-			# decrease limit since we just found a row of 0s
-			limit -= 1 
-			# keep track of row swapping
-			rowOrder = moveRowToBottom(i,rowOrder)
+			if verbose: 
+				print 'Found row of zeros.',
+				print ' Error in algorithm.'
+				return
 
-	G =  tempArray[0:i,:]
-
-	# we don't need the dependent rows
-	finalRowOrder = rowOrder[0:i]
+	G = tempArray.copy()
 
 	if verbose: 
 		print 'G.shape:', G.shape
 		print 'rank:', rank
-		print 'The redundant junk left on the bottom was size:'
-		print tempArray[i:numRows,:].shape
 		print 'New column order for H:', columnOrder
-		print 'New row order for H:\n', rowOrder
-		print 'but we can delete these rows from H:\n',
-		print rowOrder[i:numRows]
-		print 'so final row order is:\n', finalRowOrder
-		print finalRowOrder.shape
 
-	# let's reorder H, per the permutations taken above
-	# first, put rows in order, omitting the dependent rows
-	newNumberOfRowsForH = finalRowOrder.shape[0]
-	newH = zeros((newNumberOfRowsForH, numColumns))
-	for index in arange(newNumberOfRowsForH):
-		newH[index,:] = H[finalRowOrder[index],:]
-
-	# next, put the columns in order
-	tempHarray = newH.copy()
+	# Reorder the columns of H per the permutations taken above
+	newH = H.copy()
 	for index in arange(numColumns):
-		newH[:,index] = tempHarray[:,columnOrder[0,index]]
+		newH[:,index] = H[:,columnOrder[0,index]]
 
-	if verbose:
-		print 'original H.shape:', H.shape
-		print 'newH.shape:', newH.shape
-		
 	return [G, newH]
 
 def printArrayToFile(arrayName,filename):
