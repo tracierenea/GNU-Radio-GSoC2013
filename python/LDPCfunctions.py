@@ -325,6 +325,83 @@ def greedyUpperTriangulation(H):
 
 		t = t + 1
 
+	# we need to ensure phi is nonsingular
+	foundNonSingularPhi = 0
+	T = H_t[0:t, 0:t]
+	E = H_t[t:t+g,0:t]
+	A = H_t[0:t,t:t+g]
+	C = H_t[t:t+g,t:t+g]
+	D = H_t[t:t+g,t+g:n] 
+
+	invTmod2array = invMod2(T)
+	temp1  = dot(E,invTmod2array) % 2
+	temp2  = dot(temp1,A) % 2
+	phi    = (C - temp2) % 2
+	if phi.any():
+		try:
+			# try to take the inverse of phi
+			invPhi = invMod2(phi)
+		except linalg.linalg.LinAlgError:
+			# phi is singular
+			if verbose: print 'Initial phi is singular'
+		else:
+			# phi is nonsingular, so we need to use this version of H
+			foundNonSingularPhi = 1
+			if verbose: print 'Initial phi is nonsingular, phi:'
+			print phi
+	else:
+		print 'Initial phi is all zeros:\n', phi
+
+	maxIterations = 50
+
+	if not (C.any() or D.any()):
+		if verbose: print 'C and D are all zeros. There is no hope.'
+		maxIterations = 0
+
+	count = 0
+	while foundNonSingularPhi == 0 and count < maxIterations:
+		# we can shuffle the columns to the right of T and E matrices
+		# FIXME I'm sure this can be optimized to look for certain
+		# columns depending on what phi looks like
+		if verbose: print 'count:', count
+		tempH = H_t.copy()
+		columnsToShuffle = arange(t,n)
+		shuffle(columnsToShuffle)
+		index = 0
+		for colNum in arange(t,n):
+			columnNum = columnsToShuffle[index]
+			tempH[:,colNum] = H_t[:,columnNum]
+			index = index + 1
+
+		H_t = tempH.copy()
+		T = H_t[0:t, 0:t]
+		E = H_t[t:t+g,0:t]
+		A = H_t[0:t,t:t+g]
+		C = H_t[t:t+g,t:t+g]
+		invTmod2array = invMod2(T)
+		temp1  = dot(E,invTmod2array) % 2
+		temp2  = dot(temp1,A) % 2
+		phi    = (C - temp2) % 2
+		if phi.any():
+			try:
+				# try to take the inverse of phi
+				invPhi = invMod2(phi)
+			except linalg.linalg.LinAlgError:
+				# phi is singular
+				if verbose: print 'Phi is still singular'
+			else:
+				# phi is nonsingular, so this is our new candidate
+				foundNonSingularPhi = 1
+				if verbose: print 'Found a nonsingular phi:'
+				print phi
+		else:
+			if verbose: print 'phi is all zeros'
+		count = count + 1
+	if verbose: print 'Final phi:\n', phi
+
+	#### Another option is to swap the rows of [E C D] for every
+	#### permutation of the columns
+
 	return [H_t, g, t]
 
 def invMod2(squareMatrix):
@@ -425,6 +502,8 @@ def getSystematicGmatrix(H):
 	return [G, newH]
 
 def printArrayToFile(arrayName,filename):
+	# this function is handy because this nunpy command is not
+	# working for me: set_printoptions(threshold='nan')
 	numRows = arrayName.shape[0]
 	numColumns = arrayName.shape[1]
 	myfile = open(filename,'w')
