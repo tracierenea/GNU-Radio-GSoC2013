@@ -499,6 +499,82 @@ def getSystematicGmatrix(H):
 
 	return G
 
+def getFullRankHmatrix(H):
+	# This function accepts a parity check matrix H and, if it is not
+	# already full rank, will determine which rows are dependent and 
+	# remove them. This updated matrix will be returned.
+	tempArray = H.copy()
+	if linalg.matrix_rank(tempArray) == tempArray.shape[0]:
+		if verbose: print 'Returning H; it is already full rank.'
+		return tempArray
+	
+	numRows = tempArray.shape[0]
+	numColumns = tempArray.shape[1] 
+	limit = numRows
+	rank = 0
+	i = 0
+
+	# create an array to save the column permutations
+	columnOrder = arange(numColumns).reshape(1,numColumns)
+
+	# create an array to save the row permutations. we just need
+	# this to know which dependent rows to delete
+	rowOrder = arange(numRows).reshape(numRows,1)
+
+	while i < limit: 
+		# Flag indicating that the row contains a non-zero entry
+		found  = False
+		for j in arange(i, numColumns):
+			if tempArray[i, j] == 1: 
+				# Encountered a non-zero entry at (i, j)
+				found =  True 
+				# Increment rank by 1
+				rank = rank + 1    
+				# make the entry at (i,i) be 1   
+				tempArray = swapColumns(j,i,tempArray)  
+				# keep track of the column swapping
+				columnOrder = swapColumns(j,i,columnOrder)
+				break
+		if found == True:
+			for k in arange(0,numRows): 
+				if k == i: continue
+				# Checking for 1's 
+				if tempArray[k, i] == 1:
+					# add row i to row k
+					tempArray[k,:] = tempArray[k,:] + tempArray[i,:]
+					# Addition is mod2
+					tempArray = tempArray.copy() % 2 
+					# All the entries above & below (i, i) are now 0 
+			i = i + 1
+		if found == False:
+			# push the row of 0s to the bottom, and move the bottom
+			# rows up (sort of a rotation thing)
+			tempArray = moveRowToBottom(i,tempArray)
+			# decrease limit since we just found a row of 0s
+			limit -= 1 
+			# keep track of row swapping
+			rowOrder = moveRowToBottom(i,rowOrder)
+
+	# we don't need the dependent rows
+	finalRowOrder = rowOrder[0:i]
+
+	# let's reorder H, per the permutations taken above
+	# first, put rows in order, omitting the dependent rows
+	newNumberOfRowsForH = finalRowOrder.shape[0]
+	newH = zeros((newNumberOfRowsForH, numColumns))
+	for index in arange(newNumberOfRowsForH):
+		newH[index,:] = H[finalRowOrder[index],:]
+
+	# next, put the columns in order
+	tempHarray = newH.copy()
+	for index in arange(numColumns):
+		newH[:,index] = tempHarray[:,columnOrder[0,index]]
+
+	if verbose:
+		print 'original H.shape:', H.shape
+		print 'newH.shape:', newH.shape
+
+	return newH
 
 def printArrayToFile(arrayName,filename):
 	# this function is handy because this nunpy command is not
