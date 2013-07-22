@@ -35,14 +35,6 @@ def matrixMultiplierEncoder(G,s):
 
 	return t
 
-def printEncodeMatrices(H,Hp,Ir,Ik,G,Hcheck):
-	print 'H (parity-check matrix): \n', H
-	print '\nHp:\n', Hp
-	print '\nIr:\n', Ir
-	print '\nIk:\n', Ik
-	print '\nG (generator matrix):\n', G
-	print '\nHcheck (should be the same):\n', Hcheck , '\n'
-
 def calcSyndrome(H,codeword):
 	syndrome = dot(H,codeword) % 2	# use modulo 2 operations
 	return syndrome
