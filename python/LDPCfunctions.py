@@ -453,26 +453,18 @@ def moveRowToBottom(i,arrayIn):
 	return arrayOut
 
 def getSystematicGmatrix(H):
+	# This function finds the systematic form of the generator
+	# matrix G. The form is G = [I P] where I is an identity matrix
+	# and P is the parity submatrix. If the H matrix provided 
+	# is not full rank, then dependent rows will be deleted.
 	tempArray = H.copy()
 	numRows = tempArray.shape[0]
-	if linalg.matrix_rank(tempArray) != numRows:
-		if verbose: 
-			print 'Rank of H:',linalg.matrix_rank(tempArray)
-			print 'H.shape:', H.shape
-			print 'H must be full rank.',
-			print 'G matrix not generated.'
-		return
-
 	numColumns = tempArray.shape[1] 
 	limit = numRows
 	rank = 0
 	i = 0
 
-	# create an array to save the column permutations
-	columnOrder = arange(numColumns).reshape(1,numColumns)
-
 	while i < limit: 
-		if verbose: print 'index i =',i
 		# Flag indicating that the row contains a non-zero entry
 		found  = False
 		for j in arange(i, numColumns):
@@ -483,8 +475,6 @@ def getSystematicGmatrix(H):
 				rank = rank + 1    
 				# make the entry at (i,i) be 1   
 				tempArray = swapColumns(j,i,tempArray)  
-				# keep track of the column swapping
-				columnOrder = swapColumns(j,i,columnOrder)
 				break
 		if found == True:
 			for k in arange(0,numRows): 
@@ -498,24 +488,17 @@ def getSystematicGmatrix(H):
 					# All the entries above & below (i, i) are now 0 
 			i = i + 1
 		if found == False:
-			if verbose: 
-				print 'Found row of zeros.',
-				print ' Error in algorithm.'
-				return
+			# push the row of 0s to the bottom, and move the bottom
+			# rows up (sort of a rotation thing)
+			tempArray = moveRowToBottom(i,tempArray)
+			# decrease limit since we just found a row of 0s
+			limit -= 1 
 
-	G = tempArray.copy()
+	# the rows below i are the dependent rows, which we discard
+	G = tempArray[0:i,:]
 
-	if verbose: 
-		print 'G.shape:', G.shape
-		print 'rank:', rank
-		print 'New column order for H:', columnOrder
+	return G
 
-	# Reorder the columns of H per the permutations taken above
-	newH = H.copy()
-	for index in arange(numColumns):
-		newH[:,index] = H[:,columnOrder[0,index]]
-
-	return [G, newH]
 
 def printArrayToFile(arrayName,filename):
 	# this function is handy because this nunpy command is not
