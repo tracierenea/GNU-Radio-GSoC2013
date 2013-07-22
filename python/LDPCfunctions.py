@@ -71,7 +71,7 @@ def singleParityErrorFix(H,testWord):
 	return codeword
 
 def bitFlipDecoder(maxIterations, H, codeword):
-	receivedCodeword = codeword
+	receivedCodeword = codeword.copy()
 	sizeOfReceivedCodeword = receivedCodeword.shape
 	n = sizeOfReceivedCodeword[0] # number of symbols/bit in codeword
 
@@ -80,7 +80,7 @@ def bitFlipDecoder(maxIterations, H, codeword):
 		if verbose: print 'Valid codeword. No bit flips required.'
 		return receivedCodeword
 	else:
-		if verbose: print 'Evaluating codeword:', receivedCodeword
+		if verbose: print 'Evaluating codeword:\n', receivedCodeword
 		testCodeword = receivedCodeword
 		iteration = 1;
 	
@@ -92,7 +92,7 @@ def bitFlipDecoder(maxIterations, H, codeword):
 		# this: 
 		# First find the nonzero entries in the syndrome. The entry 
 		# numbers correspond to rows of interest in H.
-		rowsToLookAtInH = array(nonzero(syndrome)) 
+		rowsToLookAtInH = array(nonzero(syndrome))[0] 
 
 		# Second, for each bit, determine how many of unsatisfied 
 		# parity checks involve this bit and store this count in an 
@@ -106,18 +106,18 @@ def bitFlipDecoder(maxIterations, H, codeword):
 
 		# Next, determine which bit(s) is associated with the most 
 		# unsatisfied parity checks, and flip it/them
-		if verbose: print 'counts:', counts
+		if verbose: print 'counts:\n', counts
 		bitsToFlip = where(counts==counts.max())
 		for bitNumber in bitsToFlip[0]:
 			if verbose: print 'We need to flip bit:', bitNumber
 			testCodeword[bitNumber] = bitwise_xor\
 			                          (testCodeword[bitNumber],1)
 
-		if verbose: print 'New codeword candidate: ',testCodeword
+		if verbose: print 'New codeword candidate:\n',testCodeword
 		syndrome = calcSyndrome(H,testCodeword)
 		if haveMatch(syndrome):
 			if verbose: 
-				print 'Codeword declared to be:', testCodeword
+				print 'Codeword declared to be:\n', testCodeword
 			return testCodeword
 		else:
 			iteration = iteration + 1
@@ -225,10 +225,20 @@ def greedyUpperTriangulation(H):
 	# upper triangulation method outlined in Modern Coding 
 	# Theory Appendix 1, Section A.2
 	H_t  = H.copy()
+
+	# Per email from Dr. Urbanke, author of this textbook, this
+	# algorithm requires H to be full rank
+	if linalg.matrix_rank(H_t) != H_t.shape[0]:
+			print 'Rank of H:',linalg.matrix_rank(tempArray)
+			print 'H has', H_t.shape[0], 'rows'
+			print 'Error: H must be full rank.'
+			return
+
 	size = H_t.shape
 	n = size[1]
 	k = n - size[0]
 	g = t = 0
+
 	while t != (n-k-g):
 		H_residual = H_t[t:n-k-g,t:n]
 		size       = H_residual.shape
@@ -337,6 +347,8 @@ def greedyUpperTriangulation(H):
 	temp1  = dot(E,invTmod2array) % 2
 	temp2  = dot(temp1,A) % 2
 	phi    = (C - temp2) % 2
+	print 'C:\n', C
+	print 'temp2:\n', temp2
 	if phi.any():
 		try:
 			# try to take the inverse of phi
@@ -350,7 +362,7 @@ def greedyUpperTriangulation(H):
 			if verbose: print 'Initial phi is nonsingular, phi:'
 			print phi
 	else:
-		print 'Initial phi is all zeros:\n', phi
+		if verbose: print 'Initial phi is empty or all zeros:\n', phi
 
 	maxIterations = 50
 
@@ -405,18 +417,20 @@ def greedyUpperTriangulation(H):
 	return [H_t, g, t]
 
 def invMod2(squareMatrix):
-	inverse = inv(squareMatrix)
-	temp    = det(squareMatrix)*inverse
-	invMod2array = temp % 2
-	t = squareMatrix.shape[0]
+	A = squareMatrix.copy()
+	Ainverse = inv(A)
+	B = dot(det(A),Ainverse)
+	B = B.astype(int)
+	C = B % 2
+	t = A.shape[0]
 
-	if ((dot(squareMatrix,invMod2array) % 2) - eye(t,t)).any():
+	if ((dot(A,C) % 2) - eye(t,t)).any():
 		if verbose:print 'Error in mod 2 inverse calculation! Det =',
-		if verbose: print det(squareMatrix) % 2
+		if verbose: print det(A) % 2
 		# FIXME is this the most appropriate error to raise?
 		raise linalg.linalg.LinAlgError
 	else:
-		return invMod2array
+		return C
 
 def swapColumns(a,b,arrayIn):
 	arrayOut = arrayIn.copy()
