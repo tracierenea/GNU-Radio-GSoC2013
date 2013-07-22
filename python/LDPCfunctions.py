@@ -335,6 +335,10 @@ def greedyUpperTriangulation(H):
 
 		t = t + 1
 
+	if g == 0:
+		if verbose: print 'Error: gap is 0.'
+		return
+
 	# we need to ensure phi is nonsingular
 	foundNonSingularPhi = 0
 	T = H_t[0:t, 0:t]
@@ -347,8 +351,6 @@ def greedyUpperTriangulation(H):
 	temp1  = dot(E,invTmod2array) % 2
 	temp2  = dot(temp1,A) % 2
 	phi    = (C - temp2) % 2
-	print 'C:\n', C
-	print 'temp2:\n', temp2
 	if phi.any():
 		try:
 			# try to take the inverse of phi
@@ -360,7 +362,6 @@ def greedyUpperTriangulation(H):
 			# phi is nonsingular, so we need to use this version of H
 			foundNonSingularPhi = 1
 			if verbose: print 'Initial phi is nonsingular, phi:'
-			print phi
 	else:
 		if verbose: print 'Initial phi is empty or all zeros:\n', phi
 
@@ -404,12 +405,10 @@ def greedyUpperTriangulation(H):
 			else:
 				# phi is nonsingular, so this is our new candidate
 				foundNonSingularPhi = 1
-				if verbose: print 'Found a nonsingular phi:'
-				print phi
+				if verbose: print 'Found a nonsingular phi'
 		else:
 			if verbose: print 'phi is all zeros'
 		count = count + 1
-	if verbose: print 'Final phi:\n', phi
 
 	#### Another option is to swap the rows of [E C D] for every
 	#### permutation of the columns
@@ -418,15 +417,18 @@ def greedyUpperTriangulation(H):
 
 def invMod2(squareMatrix):
 	A = squareMatrix.copy()
+
+	# special case for one element array [1]
+	if A.size == 1 and A[0] == 1:
+		return array([1])
+
 	Ainverse = inv(A)
 	B = dot(det(A),Ainverse)
-	B = B.astype(int)
 	C = B % 2
 	t = A.shape[0]
 
 	if ((dot(A,C) % 2) - eye(t,t)).any():
-		if verbose:print 'Error in mod 2 inverse calculation! Det =',
-		if verbose: print det(A) % 2
+		if verbose:print 'Error in mod 2 inverse calculation!'
 		# FIXME is this the most appropriate error to raise?
 		raise linalg.linalg.LinAlgError
 	else:
