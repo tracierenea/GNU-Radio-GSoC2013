@@ -9,22 +9,31 @@ verbose = 1
 # FIXME - I need to go in an specify argument size constraints
 # to ensure that the matrix multiplication works correctly. 
 
-def matrixMultiplierEncoder(H,A):
+def matrixMultiplierEncoder(G,s):
+	# This function accepts a generator matrix in systematic form
+	# [I P] and the message s, and outputs the codeword. Using 
+	# notation from Turbo Coding for Satellite and Wireless
+	# Communication by Soleymani, Gao, and Vilaipornsawai
+	shapeG = G.shape
+	k = shapeG[0]
+	n = shapeG[1]
+	print G[0:k,0:k]
+	if any(G[0:k,0:k]-identity(k)):
+		if verbose: 'Error: G not in systematic form.'
+		return
+	if shapeG[0] != s.shape[0]:
+		print 'Error: provided message is not the right size.'
+		return
 
-	# Using notation from Ziemer & Tranter's Principles of 
-	# Communications, 5th edition
-	size   = H.shape
-	r      = size[0]
-	k      = size[1]/2
-	Hp     = H[0:r,0:k]
-	Ir     = identity(r,int)
-	Ik     = identity(k,int)
-	G      = concatenate((Ik,Hp))
-	Hcheck = concatenate((Hp,Ir),axis=1)
+	print G
+	P = G[:,k:n]
+	print 'P:\n',P
+	print G.transpose().shape
+	print s.shape
+	t = dot(G.transpose(),s) % 2
+	print 't:\n',t
 
-	if verbose: printEncodeMatrices(H,Hp,Ir,Ik,G,Hcheck)
-	T = dot(G,A) % 2  # codeword vector T. use mod 2 operations
-	return T
+	return t
 
 def printEncodeMatrices(H,Hp,Ir,Ik,G,Hcheck):
 	print 'H (parity-check matrix): \n', H
