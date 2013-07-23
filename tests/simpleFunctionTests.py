@@ -1,82 +1,10 @@
 #!/usr/bin/python
 
 from numpy import *
-from LDPCfunctions import *
+from LDPCdecoding import *
+from LDPCpreprocessing import *
 
-#####################################################################
-
-####### test the encoder
-print ' --- Encoder test:'
-# In the future we will build a H matrix in another module, but for 
-# now, start with some assumed small parity check matrix H
-H = array([[1, 1, 0, 1, 0, 0],
-	       [0, 1, 1, 0, 1, 0],
-	       [1, 0, 1, 0, 0, 1]])
-A = array([[1], [1], [0]]) # column vector of k information symbols
-codeword = matrixMultiplierEncoder(H,A)
-print codeword
-
-
-####### test the single parity error decoder
-print '\n --- Single parity error decode test:'
-print 'H matrix: \n', H
-print '\nCASE 1:\n'
-
-transmittedWord = array([[1], [1], [0], [0], [1], [1]])
-print 'transmitted word:\n', transmittedWord
-
-# verify no mods to a correctly received codeword  ######
-receivedWord = array([[1], [1], [0], [0], [1], [1]])
-print 'received word  (no error case):\n', receivedWord
-
-testCodeword = singleParityErrorFix(H,receivedWord)
-
-if not array_equiv(testCodeword,receivedWord):
-	print 'new candidate codeword:\n', testCodeword
-	syndrome = calcSyndrome(H,testCodeword)
-	if haveMatch(syndrome):
-		print '  - Received word had a single parity error. Corrected.'
-	else:
-		print '  - Single parity correction not succesful.'
-
-# verify case of one symbol error  ######
-receivedWord = array([[1], [1], [1], [0], [1], [1]])
-print 'received word  (1 symbol error):\n', receivedWord
-
-testCodeword = singleParityErrorFix(H,receivedWord)
-
-if not array_equiv(testCodeword,receivedWord):
-	print 'new candidate codeword:\n', testCodeword
-	syndrome = calcSyndrome(H,testCodeword)
-	if haveMatch(syndrome):
-		print '  - Received word had a single parity error. Corrected.'
-	else:
-		print '  - Single parity correction not succesful.'
-
-
-# verify that this doesn't work with 2 symbol errors
-print '\nCASE 2:\n'
-transmittedWord = array([[1], [1], [0], [0], [1], [1]])
-print 'transmitted word:\n', transmittedWord
-
-receivedWord = array([[1], [1], [1], [0], [0], [1]])
-print 'received word  (2 symbol errors):\n', receivedWord
-
-testCodeword = singleParityErrorFix(H,receivedWord)
-print 'new candidate codeword:\n', testCodeword
-
-if array_equiv(testCodeword,receivedWord):
-	syndrome = calcSyndrome(H,testCodeword)
-	if haveMatch(syndrome):
-		print '  - Received word had a single parity error. Corrected.'
-		print '  - Corrected codeword is:\n', testCodeword
-	else:
-		print '  - Single parity correction not succesful.'
-print 'The corrected codeword does not match transmitted word.'
-
-# the codeword found was 111000, not correct
-
-####### test the bit flip decoder (aka hard decoding) proposed by Gallager
+####### test the bit flip decoder (aka hard decoding) 
 
 # From Fundamentals of Error Correcting Codes, Example 15.6.1
 # This is a parity check matrix for a (16,3,4) LDPC code, so 
@@ -98,26 +26,36 @@ H = array([[1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	       [0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
 
 maxIterations = 20
-print '\n\nBit flip algorithm test:'
+transmittedCodeword = array([1,1,0,0,1,0,1,0,0,1,1,0,0,0,0,0])
+print '\n\n --- Bit flip algorithm test:'
 
-receivedCodeword = array([0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0])
-print '\nExample part a:'
-bitFlipDecoder(maxIterations,H,receivedCodeword)
-# the solution should be: 1100101001100000. Two errors corrected.
+receivedCodeword= array([0,1,0,0,1,0,1,0,0,0,1,0,0,0,0,0])
+print '\n  Example part a, two bits fliped:\ncodeword received:'
+print receivedCodeword
+print 'codeword solution:\n', 
+print bitFlipDecoder(maxIterations,H,receivedCodeword)
+print 'transmitted codeword:\n',transmittedCodeword
 
-receivedCodeword = array([1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-print '\nExample part b:'
-bitFlipDecoder(maxIterations,H,receivedCodeword)
-# the solution should be: 1100101001100000. Two errors corrected
 
-receivedCodeword = array([0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0])
-print '\nExample part c:'
-bitFlipDecoder(maxIterations,H,receivedCodeword)
-# this received word will cause the function to get caught in a loop of 
-# flipping the same bits back and forth. No solution will be reached, even
-# if maxIterations is raised.
+receivedCodeword = array([1,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0])
+print '\n  Example part b, two bits flipped:\ncodeword received:'
+print receivedCodeword
+print 'codeword solution:\n', 
+print bitFlipDecoder(maxIterations,H,receivedCodeword)
+print 'transmitted codeword:\n',transmittedCodeword
+
+receivedCodeword = array([0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0])
+print '\n Example part c, 3 bits flipped:\ncodeword received:'
+print receivedCodeword
+print 'codeword solution:\n', 
+print bitFlipDecoder(maxIterations,H,receivedCodeword)
+print 'transmitted codeword:\n',transmittedCodeword
+# this received word will cause the function to get caught in a loop 
+# of flipping the same bits back and forth. No solution will be 
+# reached, even if maxIterations is raised.
 
 ####### test the regular LDPC code constructor
+print '\n\n --- Code construtor test:'
 print 'Test 1 - (20,3,4) code:'
 H = regularLDPCcodeConstructor(20,3,4)
 print H
