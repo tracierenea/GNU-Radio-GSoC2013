@@ -3,8 +3,10 @@
 from numpy import *
 from numpy.random import shuffle, randint
 from numpy.linalg import inv, det
+from itertools import permutations
 
-verbose = 1
+# 0 gives no debug output, 1 gives a little, 2 gives a lot
+verbose = 0
 
 def calcSyndrome(H,codeword):
 	syndrome = dot(H,codeword) % 2	# use modulo 2 operations
@@ -227,7 +229,6 @@ def greedyUpperTriangulation(H):
 		return
 
 	# we need to ensure phi is nonsingular
-	foundNonSingularPhi = 0
 	T = H_t[0:t, 0:t]
 	E = H_t[t:t+g,0:t]
 	A = H_t[0:t,t:t+g]
@@ -244,35 +245,53 @@ def greedyUpperTriangulation(H):
 			invPhi = invMod2(phi)
 		except linalg.linalg.LinAlgError:
 			# phi is singular
-			if verbose: print 'Initial phi is singular'
+			if verbose > 1: print 'Initial phi is singular'
 		else:
 			# phi is nonsingular, so we need to use this version of H
-			foundNonSingularPhi = 1
-			if verbose: print 'Initial phi is nonsingular, phi:'
+			if verbose > 1: print 'Initial phi is nonsingular'
+			return [H_t, g, t]
 	else:
 		if verbose: print 'Initial phi is empty or all zeros:\n', phi
 
-	maxIterations = 50
-
+	# if the C and D submatrices are all zeros, there is no point in
+	# shuffling them around in an attempt to find a good phi
 	if not (C.any() or D.any()):
-		if verbose: print 'C and D are all zeros. There is no hope.'
-		maxIterations = 0
+		if verbose: 
+			print 'C and D are all zeros. There is no hope in',
+			print ' finding a nonsingular phi matrix. '
+		return
 
-	count = 0
-	while foundNonSingularPhi == 0 and count < maxIterations:
-		# we can shuffle the columns to the right of T and E matrices
-		# FIXME I'm sure this can be optimized to look for certain
-		# columns depending on what phi looks like
-		if verbose: print 'count:', count
+	# we can't look at every row/column pertubation possibility
+	# because there would be (n-t)! column shuffles and g! row
+	# shuffles. g has gotten up to 12 in tests, so 12! would still
+	# take quite some time. Instead, we will just pick an arbitrary 
+	# number of max iterations to perform, then break
+	maxIterations = 300
+	iterationCount = 0
+	columnsToShuffle = arange(t,n) 
+	rowsToShuffle = arange(t,t+g)
+
+	while iterationCount < maxIterations:
+		if verbose > 1: print 'iterationCount:', iterationCount
 		tempH = H_t.copy()
-		columnsToShuffle = arange(t,n)
-		shuffle(columnsToShuffle)
-		index = 0
-		for colNum in arange(t,n):
-			columnNum = columnsToShuffle[index]
-			tempH[:,colNum] = H_t[:,columnNum]
-			index = index + 1
 
+		shuffle(columnsToShuffle)
+		shuffle(rowsToShuffle)
+		index = 0
+		for newDestinationColumnNumber in arange(t,n):
+			oldColumnNumber = columnsToShuffle[index]
+			tempH[:,newDestinationColumnNumber] = \
+			                                   H_t[:,oldColumnNumber]
+			index +=1
+
+		tempH2 = tempH.copy()
+		index = 0
+		for newDesinationRowNumber in arange(t,t+g):
+			oldRowNumber = rowsToShuffle[index]
+			tempH[newDesinationRowNumber,:] = tempH2[oldRowNumber,:]
+			index +=1
+		
+		# now test this new H matrix
 		H_t = tempH.copy()
 		T = H_t[0:t, 0:t]
 		E = H_t[t:t+g,0:t]
@@ -288,19 +307,22 @@ def greedyUpperTriangulation(H):
 				invPhi = invMod2(phi)
 			except linalg.linalg.LinAlgError:
 				# phi is singular
-				if verbose: print 'Phi is still singular'
+				if verbose > 1: print 'Phi is still singular'
 			else:
-				# phi is nonsingular, so this is our new candidate
-				foundNonSingularPhi = 1
-				if verbose: print 'Found a nonsingular phi'
+				# phi is nonsingular, so we're done
+				if verbose: 
+					print 'Found a nonsingular phi'
+					print 'iterationCount = ', iterationCount
+				return [H_t, g, t]
 		else:
-			if verbose: print 'phi is all zeros'
-		count = count + 1
+			if verbose > 1: print 'phi is all zeros'
 
-	#### Another option is to swap the rows of [E C D] for every
-	#### permutation of the columns
+		iterationCount +=1
 
-	return [H_t, g, t]
+	# if we've reached this point, then we haven't found a
+	# version of H that has a nonsingular phi
+	if verbose: print '--- Error: nonsingular phi matrix not found.'
+
 
 def invMod2(squareMatrix):
 	A = squareMatrix.copy()
@@ -392,7 +414,7 @@ def getFullRankHmatrix(H):
 	# remove them. This updated matrix will be returned.
 	tempArray = H.copy()
 	if linalg.matrix_rank(tempArray) == tempArray.shape[0]:
-		if verbose: print 'Returning H; it is already full rank.'
+		if verbose > 1: print 'Returning H; it is already full rank.'
 		return tempArray
 	
 	numRows = tempArray.shape[0]
@@ -409,7 +431,7 @@ def getFullRankHmatrix(H):
 	rowOrder = arange(numRows).reshape(numRows,1)
 
 	while i < limit: 
-		if verbose: print 'In getFullRankHmatrix; i:', i
+		if verbose > 1: print 'In getFullRankHmatrix; i:', i
 		# Flag indicating that the row contains a non-zero entry
 		found  = False
 		for j in arange(i, numColumns):
