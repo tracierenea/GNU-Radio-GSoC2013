@@ -6,7 +6,7 @@ from numpy.linalg import inv, det
 from itertools import permutations
 
 # 0 gives no debug output, 1 gives a little, 2 gives a lot
-verbose = 1
+verbose = 0
 
 def calcSyndrome(H,codeword):
 	syndrome = dot(H,codeword) % 2	# use modulo 2 operations
@@ -28,6 +28,11 @@ def regularLDPCcodeConstructor(n,p,q):
 	# Reference: Turbo Coding for Satellite and Wireless 
 	# Communications, sec 9.3
 
+	# Note, the matrices computed from this algorithm will never
+	# have full rank. Reference Gallager's Dissertation. They will
+	# have rank = n-p. To convert it to full rank, use the 
+	# the function getFullRankHmatrix
+
 	# for this algorithm, n/p must be an integer, because we need the
 	# number of rows in eacn submatrix to be a whole number
 	ratioTest = (n*1.0)/q
@@ -43,14 +48,6 @@ def regularLDPCcodeConstructor(n,p,q):
 	submatrix1 = zeros((m/p,n))  
 
 	for row in arange(m/p):
-
-		# these lines have the ones going from bottom to top, left
-		# to right across the matrix. Switching to top to bottom, 
-		# left to right, because I think it will be faster to then
-		# convert it to systematic form
-		# range1 = n-(row+1)*q
-		# range2 = n-row*q
-
 		range1 = row*q
 		range2 = (row+1)*q 
 		submatrix1[row,range1:range2] = 1
@@ -91,20 +88,6 @@ def regularLDPCcodeConstructor(n,p,q):
 		if nonzeros.shape[1] != p:
 			print 'Row', columnNum, 'has incorrect weight!'
 			return
-
-	# At this point, we can use this matrix for parity checks, 
-	# but it is not in systematic form so it can't be used
-	# to find the parity matrix P, and therefore can't be used
-	# for encoding via the generation matrix. 
-
-	# Putting H into its systematic form requires row operations. 
-	# I cannot figure out how to write this into an algorithm for
-	# matrices of unknown size, and also using mod 2 operations.
-	# <in work....>
-
-	# There are some published steps that require taking the 
-	# determinant but taking the determinant of a huge matrix
-	# won't work.....
 
 	return H
 
@@ -311,7 +294,7 @@ def greedyUpperTriangulation(H):
 			else:
 				# phi is nonsingular, so we're done
 				if verbose: 
-					print 'Found a nonsingular phi'
+					print 'Found a nonsingular phi on ',
 					print 'iterationCount = ', iterationCount
 				return [H_t, g, t]
 		else:
@@ -326,6 +309,7 @@ def greedyUpperTriangulation(H):
 
 def invMod2(squareMatrix):
 	A = squareMatrix.copy()
+	t = A.shape[0]
 
 	# special case for one element array [1]
 	if A.size == 1 and A[0] == 1:
@@ -334,10 +318,37 @@ def invMod2(squareMatrix):
 	Ainverse = inv(A)
 	B = dot(det(A),Ainverse)
 	C = B % 2
-	t = A.shape[0]
 
-	if ((dot(A,C) % 2) - eye(t,t)).any():
-		if verbose:print 'Error in mod 2 inverse calculation!'
+	# encountered lots of rounding errors with this function.
+	# Previously tried floor, C.astype(int), and casting with (int)
+	# and none of that works correctly, so doing it the tedious way
+
+	test = dot(A,C) % 2
+	tempTest = zeros_like(test)
+	for colNum in arange(test.shape[1]):
+		for rowNum in arange(test.shape[0]):
+			value = test[rowNum,colNum]
+			if (abs(1-value)) < 1e-6:
+				# this is a 1
+				tempTest[rowNum,colNum] = 1
+			elif (abs(2-value)) < 1e-6:
+				# there shouldn't be any 2s after B % 2, but I'm 
+				# seeing them!
+				tempTest[rowNum,colNum] = 0
+			elif (abs(0-value)) < 1e-6:
+				# this is a 0
+				tempTest[rowNum,colNum] = 0
+			else: 
+				if verbose: 
+					print 'In invMod2. What value is this? Mod 2 has'
+					print 'already been done. value:',
+					print value
+
+	test = tempTest.copy()
+
+	if (test - eye(t,t) % 2).any():
+		if verbose:
+			print 'Error in invMod2: did not find inverse.'
 		# FIXME is this the most appropriate error to raise?
 		raise linalg.linalg.LinAlgError
 	else:
