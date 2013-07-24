@@ -6,7 +6,7 @@ from numpy.linalg import inv, det
 from itertools import permutations
 
 # 0 gives no debug output, 1 gives a little, 2 gives a lot
-verbose = 0
+verbose = 1
 
 def calcSyndrome(H,codeword):
 	syndrome = dot(H,codeword) % 2	# use modulo 2 operations
@@ -251,7 +251,7 @@ def greedyUpperTriangulation(H):
 			if verbose > 1: print 'Initial phi is nonsingular'
 			return [H_t, g, t]
 	else:
-		if verbose: print 'Initial phi is empty or all zeros:\n', phi
+		if verbose: print 'Initial phi is all zeros:\n', phi
 
 	# if the C and D submatrices are all zeros, there is no point in
 	# shuffling them around in an attempt to find a good phi
@@ -499,3 +499,54 @@ def printArrayToFile(arrayName,filename):
 			myfile.write(tempstring)
 		myfile.write('\n')
 	myfile.close()
+
+def getParametersForEncoding(H,numIterations=100):
+	# this function will run the Greedy Upper Triangulation algorithm
+	# for numIterations times, looking for the lowest possible gap. 
+	# The submtrices returned are those needed for real-time encoding
+
+	hadFirstJoy = 0
+	index = 1
+	while index <= numIterations:
+		if verbose > 1: 
+			print 'In getParametersForEncoding, index:', index
+		try:
+			[betterH, gap, t]  = greedyUpperTriangulation(H)
+		except:
+			if verbose > 1: 
+				print 'greedyUpperTriangulation must have had error'
+		else:
+			if not hadFirstJoy: 
+				hadFirstJoy = 1 
+				bestGap = gap
+				bestH = betterH.copy()
+				bestT = t
+			elif gap < bestGap:
+				bestGap = gap
+				bestH = betterH.copy()
+				bestT = t
+
+		index += 1
+
+	if hadFirstJoy:
+		n = bestH.shape[1]
+		T = bestH[0:bestT, 0:bestT]
+		E = bestH[bestT:bestT+bestGap,0:bestT]
+		A = bestH[0:bestT,bestT:bestT+bestGap]
+		B = bestH[0:bestT,bestT+bestGap:n]
+		C = bestH[bestT:bestT+bestGap,bestT:bestT+bestGap]
+		D = bestH[bestT:bestT+bestGap,bestT+bestGap:n]
+		invTmod2array = invMod2(T)
+		temp1  = dot(E,invTmod2array) % 2
+		temp2  = dot(temp1,A) % 2
+		phi    = (C - temp2) % 2
+		invPhi = invMod2(phi)
+
+		k = n - bestH.shape[0]
+
+		return [invTmod2array,invPhi,E,A,B,D,bestH,n,k,bestGap]
+	else:
+		if verbose: 
+			print 'Error: Could not find appropriate H form',
+			print 'for encoding.'
+		return
