@@ -3,7 +3,7 @@
 from numpy import *
 from LDPCdecoding import *
 from LDPCpreprocessing import *
-from LDPChelperFunctions import readAlistFile
+from LDPChelperFunctions import readAlistFile, writeAlistFile
 
 ####### test the bit flip decoder (aka hard decoding) 
 
@@ -99,3 +99,15 @@ if allclose(H,trueH):
 else:
 	print 'Test not successful:',
 	print 'H matrix created does not match true H.'
+
+####### test function writeAlistFile (read an alist file)
+print '\nTest 6 - writeAlistFile test'
+writeAlistFile("12.4.3.111.alist.test",trueH)
+H = readAlistFile("12.4.3.111.alist.test",1)
+if allclose(H,trueH):
+	print 'Successful test: H read from file matches the matrix',
+	print 'written to file.'
+else:
+	print 'Test not successful:',
+	print 'H matrix read from file does not match the matrix that',
+	print 'should have been written to file.'
