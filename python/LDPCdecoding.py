@@ -5,6 +5,7 @@ from numpy.random import shuffle, randint
 from numpy.linalg import inv, det
 from LDPCpreprocessing import calcSyndrome, haveMatch
 
+# 0 gives no debug output, 1 gives a little, 2 gives a lot
 verbose = 0
 
 def bitFlipDecoder(maxIterations, H, codeword):
@@ -14,15 +15,18 @@ def bitFlipDecoder(maxIterations, H, codeword):
 
 	syndrome = calcSyndrome(H,receivedCodeword)
 	if haveMatch(syndrome):
-		if verbose: print 'Valid codeword. No bit flips required.'
+		if verbose: 
+			print 'bitFlipDecoder: Received valid codeword. No bit',
+			print ' flips required.'
 		return receivedCodeword
 	else:
-		if verbose: print 'Evaluating codeword:\n', receivedCodeword
+		if verbose > 1: 
+			print 'Evaluating codeword:\n', receivedCodeword
 		testCodeword = receivedCodeword
 		iteration = 1;
 	
 	while iteration <= maxIterations:
-		if verbose: print 'Iteration:', iteration
+		if verbose >1: print 'bitFlipDecoder: iteration:', iteration
 
 		# For each of the n bits in the codeword, determine how many
 		# of the unsatisfied parity checks involve that bit. To do 
@@ -43,17 +47,19 @@ def bitFlipDecoder(maxIterations, H, codeword):
 
 		# Next, determine which bit(s) is associated with the most 
 		# unsatisfied parity checks, and flip it/them
-		if verbose: print 'counts:\n', counts
+		if verbose > 1: print 'counts:\n', counts
 		bitsToFlip = where(counts==counts.max())
 		for bitNumber in bitsToFlip[0]:
-			if verbose: print 'We need to flip bit:', bitNumber
-			testCodeword[bitNumber] = bitwise_xor\
-			                          (testCodeword[bitNumber],1)
+			if verbose > 1: print 'We need to flip bit:', bitNumber
+			testCodeword[bitNumber] = \
+			             bitwise_xor(int(testCodeword[bitNumber]),1)
 
-		if verbose: print 'New codeword candidate:\n',testCodeword
+		if verbose > 1: 
+			print 'New codeword candidate:\n',testCodeword
 		syndrome = calcSyndrome(H,testCodeword)
 		if haveMatch(syndrome):
-			if verbose: 
+			if verbose: print 'Valid codeword found.'
+			if verbose>1: 
 				print 'Codeword declared to be:\n', testCodeword
 			return testCodeword
 		else:

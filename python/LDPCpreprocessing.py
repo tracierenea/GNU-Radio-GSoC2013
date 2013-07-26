@@ -3,7 +3,6 @@
 from numpy import *
 from numpy.random import shuffle, randint
 from numpy.linalg import inv, det
-from itertools import permutations
 
 # 0 gives no debug output, 1 gives a little, 2 gives a lot
 verbose = 0
@@ -241,7 +240,7 @@ def greedyUpperTriangulation(H):
 	if not (C.any() or D.any()):
 		if verbose: 
 			print 'C and D are all zeros. There is no hope in',
-			print ' finding a nonsingular phi matrix. '
+			print 'finding a nonsingular phi matrix. '
 		return
 
 	# we can't look at every row/column pertubation possibility
@@ -294,7 +293,7 @@ def greedyUpperTriangulation(H):
 			else:
 				# phi is nonsingular, so we're done
 				if verbose: 
-					print 'Found a nonsingular phi on ',
+					print 'Found a nonsingular phi on',
 					print 'iterationCount = ', iterationCount
 				return [H_t, g, t]
 		else:
@@ -316,7 +315,7 @@ def invMod2(squareMatrix):
 		return array([1])
 
 	Ainverse = inv(A)
-	B = dot(det(A),Ainverse)
+	B = det(A)*Ainverse
 	C = B % 2
 
 	# encountered lots of rounding errors with this function.
@@ -328,21 +327,21 @@ def invMod2(squareMatrix):
 	for colNum in arange(test.shape[1]):
 		for rowNum in arange(test.shape[0]):
 			value = test[rowNum,colNum]
-			if (abs(1-value)) < 1e-6:
+			if (abs(1-value)) < 0.01:
 				# this is a 1
 				tempTest[rowNum,colNum] = 1
-			elif (abs(2-value)) < 1e-6:
+			elif (abs(2-value)) < 0.01:
 				# there shouldn't be any 2s after B % 2, but I'm 
 				# seeing them!
 				tempTest[rowNum,colNum] = 0
-			elif (abs(0-value)) < 1e-6:
+			elif (abs(0-value)) < 0.01:
 				# this is a 0
 				tempTest[rowNum,colNum] = 0
 			else: 
-				if verbose: 
-					print 'In invMod2. What value is this? Mod 2 has'
-					print 'already been done. value:',
-					print value
+				if verbose > 1: 
+					print 'In invMod2. Rounding error on this',
+					print 'value? Mod 2 has already been done.',
+					print 'value:', value
 
 	test = tempTest.copy()
 
@@ -519,8 +518,8 @@ def getParametersForEncoding(H,numIterations=100):
 	hadFirstJoy = 0
 	index = 1
 	while index <= numIterations:
-		if verbose > 1: 
-			print 'In getParametersForEncoding, index:', index
+		if verbose: 
+			print '--- In getParametersForEncoding, index:', index
 		try:
 			[betterH, gap, t]  = greedyUpperTriangulation(H)
 		except:
