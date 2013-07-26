@@ -3,6 +3,7 @@
 from numpy import *
 from LDPCdecoding import *
 from LDPCpreprocessing import *
+from LDPChelperFunctions import readAlistFile
 
 ####### test the bit flip decoder (aka hard decoding) 
 
@@ -73,3 +74,28 @@ print '\nTest 4 - (1000,10,20) code:'
 H = regularLDPCcodeConstructor(1000,10,20)
 print H
 print H.shape
+
+####### test function readAlistFile (read an alist file)
+print '\nTest 5 - readAlistFile test'
+H = readAlistFile("12.4.3.111.alist",1)
+
+# this true H, and the alist file is from:
+# http://www.inference.phy.cam.ac.uk/mackay/codes/alist.html
+trueH = array([[0,0,1,0,0,0,0,1,0,1,0,0,1,0,0,0],
+	           [0,0,0,1,0,0,1,0,1,0,0,0,1,0,0,0],
+	           [0,1,0,0,1,0,1,0,0,1,0,0,0,0,0,0],
+	           [0,0,0,1,0,1,0,0,0,0,1,0,0,1,0,0],
+	           [0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1],
+	           [1,0,0,0,0,1,0,0,1,1,0,0,0,0,0,0],
+	           [0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0],
+	           [0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+	           [1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,1],
+	           [0,0,1,0,1,0,0,0,0,0,0,1,0,1,0,0],
+	           [0,1,0,0,0,0,0,0,0,0,1,0,1,0,1,0],
+	           [1,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0]])
+
+if allclose(H,trueH):
+	print 'Successful test: H matrix created matches true H.'
+else:
+	print 'Test not successful:',
+	print 'H matrix created does not match true H.'
