@@ -45,6 +45,7 @@ if _RTLD_GLOBAL != 0:
 from ldpc_swig import *
 
 # import any pure python here
+from bit_flip_decoder_ss import bit_flip_decoder_ss
 #
 
 # ----------------------------------------------------------------
