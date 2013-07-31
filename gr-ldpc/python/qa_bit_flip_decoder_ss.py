@@ -30,6 +30,9 @@ class qa_bit_flip_decoder_ss (gr_unittest.TestCase):
         self.tb = None
 
     def test_001_t (self):
+    	# This test case is from Fundamentals of Error-Correcting
+    	# Codes by Huffman and Pless. Example 15.6.1.
+    	
     	# transmitted codeword is the truth data
         transmitted_codeword = (1,1,0,0,1,0,1,0,0,1,1,0,0,0,0,0)
         # received codeword contains two bits flipped (2 errors)
