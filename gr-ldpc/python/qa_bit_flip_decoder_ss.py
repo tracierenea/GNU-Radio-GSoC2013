@@ -30,9 +30,25 @@ class qa_bit_flip_decoder_ss (gr_unittest.TestCase):
         self.tb = None
 
     def test_001_t (self):
-        # set up fg
+    	# transmitted codeword is the truth data
+        transmitted_codeword = (1,1,0,0,1,0,1,0,0,1,1,0,0,0,0,0)
+        # received codeword contains two bits flipped (2 errors)
+        received_codeword    = (1,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0)
+        # source of shorts
+        src = gr.vector_source_s(received_codeword)
+        # solution is the codeword found by decoder
+        solution = qa_bit_flip_decoder_ss()
+        # short sink that writes to a vector
+        dst = gr.vector_sink_s()
+
+        self.tb.connect(Src,solution)
+        self.tb.connect(solution,dst)
         self.tb.run ()
+        result_data = dst.data()
+
         # check data
+        self.assertTupleEqual(transmitted_codeword,result_data)
+
 
 
 if __name__ == '__main__':
