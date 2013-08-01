@@ -18,5 +18,6 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    ldpc_bit_flip_decoder_ss.xml DESTINATION share/gnuradio/grc/blocks
+    ldpc_bit_flip_decoder_ss.xml
+    ldpc_Richardson_Urbanke_encoder_ss.xml DESTINATION share/gnuradio/grc/blocks
 )
