@@ -17,6 +17,9 @@
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
 
+# adding this per the suggestion of cmake
+cmake_minimum_required(VERSION 2.8)
+
 ########################################################################
 # Include python install macros
 ########################################################################
@@ -32,7 +35,8 @@ GR_PYTHON_INSTALL(
     FILES
     __init__.py
     bit_flip_decoder_ss.py
-    Richardson_Urbanke_encoder_ss.py DESTINATION ${GR_PYTHON_DIR}/ldpc
+    Richardson_Urbanke_encoder_ss.py
+    generator_matrix_encoder_ss.py DESTINATION ${GR_PYTHON_DIR}/ldpc
 )
 
 ########################################################################
@@ -44,3 +48,4 @@ set(GR_TEST_TARGET_DEPS gnuradio-ldpc)
 set(GR_TEST_PYTHON_DIRS ${CMAKE_BINARY_DIR}/swig)
 GR_ADD_TEST(qa_bit_flip_decoder_ss ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_bit_flip_decoder_ss.py)
 GR_ADD_TEST(qa_Richardson_Urbanke_encoder_ss ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_Richardson_Urbanke_encoder_ss.py)
+GR_ADD_TEST(qa_generator_matrix_encoder_ss ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_generator_matrix_encoder_ss.py)

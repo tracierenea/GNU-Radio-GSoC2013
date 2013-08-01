@@ -47,6 +47,7 @@ from ldpc_swig import *
 # import any pure python here
 from bit_flip_decoder_ss import bit_flip_decoder_ss
 from Richardson_Urbanke_encoder_ss import Richardson_Urbanke_encoder_ss
+from generator_matrix_encoder_ss import generator_matrix_encoder_ss
 #
 
 # ----------------------------------------------------------------
