@@ -456,24 +456,28 @@ def getParametersForEncoding(H,numIterations=100):
 		index += 1
 
 	if hadFirstJoy:
-		n = bestH.shape[1]
-		T = bestH[0:bestT, 0:bestT]
-		E = bestH[bestT:bestT+bestGap,0:bestT]
-		A = bestH[0:bestT,bestT:bestT+bestGap]
-		B = bestH[0:bestT,bestT+bestGap:n]
-		C = bestH[bestT:bestT+bestGap,bestT:bestT+bestGap]
-		D = bestH[bestT:bestT+bestGap,bestT+bestGap:n]
-		invTmod2array = invMod2(T)
-		temp1  = dot(E,invTmod2array) % 2
-		temp2  = dot(temp1,A) % 2
-		phi    = (C - temp2) % 2
-		invPhi = invMod2(phi)
-
-		k = n - bestH.shape[0]
-
+		[invTmod2array,invPhi,E,A,B,D,n,k] = \
+	   extractUpperTriangulationMatrixParameters(bestH,bestT,bestGap)
 		return [invTmod2array,invPhi,E,A,B,D,bestH,n,k,bestGap]
 	else:
 		if verbose: 
 			print 'Error: Could not find appropriate H form',
 			print 'for encoding.'
 		return
+
+def extractUpperTriangulationMatrixParameters(H,t,g):
+		n = H.shape[1]
+		T = H[0:t, 0:t]
+		E = H[t:t+g,0:t]
+		A = H[0:t,t:t+g]
+		B = H[0:t,t+g:n]
+		C = H[t:t+g,t:t+g]
+		D = H[t:t+g,t+g:n]
+		invTmod2array = invMod2(T)
+		temp1  = dot(E,invTmod2array) % 2
+		temp2  = dot(temp1,A) % 2
+		phi    = (C - temp2) % 2
+		invPhi = invMod2(phi)
+		k = n - H.shape[0]
+
+		return [invTmod2array,invPhi,E,A,B,D,n,k]
