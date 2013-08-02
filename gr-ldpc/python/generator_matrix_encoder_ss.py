@@ -3,9 +3,9 @@
 # Copyright 2013 Tracie Perez.
 # 
 # This is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
+# it under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your 
+# option) any later version.
 # 
 # This software is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,7 +35,7 @@ class generator_matrix_encoder_ss(gr.sync_block):
         self.G = G
         self.k = G.shape[0]
         self.n = G.shape[1]
-        if np.any(G[0:k,0:k]-np.identity(k)):
+        if np.any(G[0:self.k,0:self.k]-np.identity(self.k)):
             print 'Error: G not in systematic form.'
         gr.sync_block.__init__(self,
             name="generator_matrix_encoder_ss",
@@ -52,7 +52,7 @@ class generator_matrix_encoder_ss(gr.sync_block):
             print 'Error: provided message is not the right size.'
             return
         
-        codeword = np.dot(G.transpose(),s) % 2
+        codeword = np.dot(self.G.transpose(),s) % 2
 
         # FIXME use the slice operator when assigning to output items
         # out[:] = in0
