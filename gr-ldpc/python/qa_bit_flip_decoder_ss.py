@@ -18,8 +18,9 @@
 # Boston, MA 02110-1301, USA.
 # 
 
-from gnuradio import gr, gr_unittest
+from gnuradio import gr, gr_unittest, blocks
 from bit_flip_decoder_ss import bit_flip_decoder_ss
+from LDPC_H_matrix import LDPC_parity_check_matrix
 
 class qa_bit_flip_decoder_ss (gr_unittest.TestCase):
 
@@ -32,27 +33,23 @@ class qa_bit_flip_decoder_ss (gr_unittest.TestCase):
     def test_001_t (self):
     	# This test case is from Fundamentals of Error-Correcting
     	# Codes by Huffman and Pless. Example 15.6.1.
-    	
+
+        parity_check_matrix = LDPC_parity_check_matrix(
+            alist_filename="qa_bit_flip_decoder_ss_test_001_t.alist")
     	# transmitted codeword is the truth data
         transmitted_codeword = (1,1,0,0,1,0,1,0,0,1,1,0,0,0,0,0)
         # received codeword contains two bits flipped (2 errors)
         received_codeword    = (1,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0)
-        # source of shorts
-        src = gr.vector_source_s(received_codeword)
-        # solution is the codeword found by decoder
-        solution = qa_bit_flip_decoder_ss()
-        # short sink that writes to a vector
-        dst = gr.vector_sink_s()
-
-        self.tb.connect(Src,solution)
-        self.tb.connect(solution,dst)
+        src = blocks.vector_source_i(received_codeword)
+        str2vec = blocks.stream_to_vector(4, parity_check_matrix.n)
+        vec2str = blocks.vector_to_stream(4, parity_check_matrix.n)
+        decoder = bit_flip_decoder_ss(parity_check_matrix)
+        dst = blocks.vector_sink_i()
+        self.tb.connect(src, str2vec, decoder, vec2str, dst)
         self.tb.run ()
         result_data = dst.data()
-
         # check data
         self.assertTupleEqual(transmitted_codeword,result_data)
-
-
 
 if __name__ == '__main__':
     gr_unittest.run(qa_bit_flip_decoder_ss, "qa_bit_flip_decoder_ss.xml")

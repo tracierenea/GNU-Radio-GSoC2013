@@ -18,53 +18,50 @@
 # Boston, MA 02110-1301, USA.
 # 
 
+import string
+import numpy as np
+
 class LDPC_parity_check_matrix:
 	""" Class for a LDPC parity check matrix """
 	def __init__(self, alist_filename = None, n_p_q = None ):
 		if (alist_filename != None):
-			self.H = read_alist_file(alist_filename)
+			self.H = self.read_alist_file(alist_filename)
 		elif (n_p_q != None):
-			self.H = regular_LDPC_code_contructor(n_p_q)
+			self.H = self.regular_LDPC_code_contructor(n_p_q)
 		else:
 			print 'Error: provide either an alist filename or', 
 			print 'parameters for constructing regular LDPC parity',
 			print 'check matrix.'
 
-		self.rank = linalg.matrix_rank(H)
-		self.numRows = H.shape[0]
-		self.n = H.shape[1]
+		self.rank = np.linalg.matrix_rank(self.H)
+		self.numRows = self.H.shape[0]
+		self.n = self.H.shape[1]
 		self.k = self.n -self.numRows
 
-
-	def read_alist_file(filename):
+	def read_alist_file(self,filename):
 		# This function reads in an alist file and returns the
 		# corresponding parity check matrix H. The format of alist
 		# files is desribed at:
 		# http://www.inference.phy.cam.ac.uk/mackay/codes/alist.html
 
-		myfile = open(filename,'r')
-		data = myfile.readlines()
-
+		myfile    = open(filename,'r')
+		data      = myfile.readlines()
 		size      = string.split(data[0])
-		numRows   = int(size[0])
-		numCols   = int(size[1])
-		weights   = string.split(data[1])
-		rowWeight = weights[0]
-		colWeight = weights[1]
-
-		H = zeros((numRows,numCols))
-		for lineNumber in arange(4,4+numRows):
+		numCols   = int(size[0])
+		numRows   = int(size[1])
+		H = np.zeros((numRows,numCols))
+		for lineNumber in np.arange(4,4+numCols):
 			indices = string.split(data[lineNumber])
 			for index in indices:
-				H[lineNumber-4,int(index)-1] = 1
-
-		# the subsequent lines in the file list the indices for where
-		# the 1s are in the columns, but this is redundant 
-		# information
+				H[int(index)-1,lineNumber-4] = 1
+		# The subsequent lines in the file list the indices for where
+		# the 1s are in the rows, but this is redundant 
+		# information.
 
 		return H
 
-	def regular_LDPC_code_contructor(n_p_q):
+
+	def regular_LDPC_code_contructor(self,n_p_q):
 
 		# Following Gallager's approach where we create p submatrices. 
 		# Reference: Turbo Coding for Satellite and Wireless 
