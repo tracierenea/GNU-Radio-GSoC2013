@@ -39,10 +39,12 @@ class LDPC_parity_check_matrix:
 		self.k = self.n -self.numRows
 
 	def read_alist_file(self,filename):
-		# This function reads in an alist file and returns the
-		# corresponding parity check matrix H. The format of alist
-		# files is desribed at:
-		# http://www.inference.phy.cam.ac.uk/mackay/codes/alist.html
+		"""
+		This function reads in an alist file and creates the
+		corresponding parity check matrix H. The format of alist
+		files is desribed at:
+		http://www.inference.phy.cam.ac.uk/mackay/codes/alist.html
+		"""
 
 		myfile    = open(filename,'r')
 		data      = myfile.readlines()
@@ -61,10 +63,11 @@ class LDPC_parity_check_matrix:
 		return H
 
 	def writeAlistFile(filename,H,verbose=0):
-		# This function reads in a parity check matrix H and writes 
-		# the corresponding alist file. The format of alist files is
-		# desribed at: 
-		# http://www.inference.phy.cam.ac.uk/mackay/codes/alist.html
+		"""
+		This function writes an alist file for the parity check
+		matrix. The format of alist files is desribed at: 
+		http://www.inference.phy.cam.ac.uk/mackay/codes/alist.html
+		"""
 
 		myfile = open(filename,'w')
 
@@ -119,15 +122,18 @@ class LDPC_parity_check_matrix:
 		myfile.close()
 
 	def regular_LDPC_code_contructor(self,n_p_q):
+		"""
+		This function constructs a LDPC parity check matrix
+		H. The algorithm follows Gallager's approach where we create 
+		p submatrices and stack them together. Reference: Turbo 
+		Coding for Satellite and Wireless Communications, section
+		9,3.
 
-		# Following Gallager's approach where we create p submatrices. 
-		# Reference: Turbo Coding for Satellite and Wireless 
-		# Communications, sec 9.3
-
-		# Note, the matrices computed from this algorithm will never
-		# have full rank. Reference Gallager's Dissertation. They 
-		# will have rank = (number of rows - p + 1). To convert it
-		# to full rank, use the function getFullRankHmatrix
+		Note: the matrices computed from this algorithm will never
+		have full rank. (Reference Gallager's Dissertation.) They 
+		will have rank = (number of rows - p + 1). To convert it
+		to full rank, use the function getFullRankHmatrix
+		"""
 
 		n = n_p_q[0] 	# codeword length
 		p = n_p_q[1] 	# column weight
