@@ -23,15 +23,19 @@ import numpy as np
 
 class LDPC_parity_check_matrix:
 	""" Class for a LDPC parity check matrix """
-	def __init__(self, alist_filename = None, n_p_q = None ):
+	def __init__(self, alist_filename = None, 
+		         n_p_q = None, 
+		         H_matrix = None):
 		if (alist_filename != None):
 			self.H = self.read_alist_file(alist_filename)
 		elif (n_p_q != None):
 			self.H = self.regular_LDPC_code_contructor(n_p_q)
+		elif (H_matrix != None):
+			self.H = H
 		else:
-			print 'Error: provide either an alist filename or', 
+			print 'Error: provide either an alist filename,', 
 			print 'parameters for constructing regular LDPC parity',
-			print 'check matrix.'
+			print 'check matrix, or a numpy array.'
 
 		self.rank = np.linalg.matrix_rank(self.H)
 		self.numRows = self.H.shape[0]
