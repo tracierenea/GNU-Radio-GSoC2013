@@ -20,6 +20,7 @@
 
 import string
 import numpy as np
+from numpy.random import shuffle
 
 class LDPC_parity_check_matrix:
 	""" Class for a LDPC parity check matrix """
@@ -31,7 +32,7 @@ class LDPC_parity_check_matrix:
 		elif (n_p_q != None):
 			self.H = self.regular_LDPC_code_contructor(n_p_q)
 		elif (H_matrix != None):
-			self.H = H
+			self.H = H_matrix
 		else:
 			print 'Error: provide either an alist filename,', 
 			print 'parameters for constructing regular LDPC parity',
@@ -66,7 +67,7 @@ class LDPC_parity_check_matrix:
 
 		return H
 
-	def writeAlistFile(filename,H,verbose=0):
+	def writeAlistFile(self,filename,H,verbose=0):
 		"""
 		This function writes an alist file for the parity check
 		matrix. The format of alist files is desribed at: 
@@ -155,8 +156,8 @@ class LDPC_parity_check_matrix:
 
 		# First submatrix first: 
 		m = (n*p)/q  # number of rows in H matrix
-		submatrix1 = zeros((m/p,n))  
-		for row in arange(m/p):
+		submatrix1 = np.zeros((m/p,n))  
+		for row in np.arange(m/p):
 			range1 = row*q
 			range2 = (row+1)*q 
 			submatrix1[row,range1:range2] = 1
@@ -164,16 +165,16 @@ class LDPC_parity_check_matrix:
 
 		# Create the other submatrices and vertically stack them on.
 		submatrixNum = 2
-		newColumnOrder = arange(n)
+		newColumnOrder = np.arange(n)
 		while submatrixNum <= p:
-			submatrix = zeros((m/p,n))
+			submatrix = np.zeros((m/p,n))
 			shuffle(newColumnOrder)
 
-			for columnNum in arange(n):
+			for columnNum in np.arange(n):
 				submatrix[:,columnNum] = \
 				              submatrix1[:,newColumnOrder[columnNum]]
 
-			H = vstack((H,submatrix))
+			H = np.vstack((H,submatrix))
 			submatrixNum = submatrixNum + 1 
 
 		# Double check the row weight and column weights.
@@ -182,15 +183,15 @@ class LDPC_parity_check_matrix:
 		cols = size[1]
 
 		# Check the row weights.
-		for rowNum in arange(rows):
-			nonzeros = array(H[rowNum,:].nonzero())
+		for rowNum in np.arange(rows):
+			nonzeros = np.array(H[rowNum,:].nonzero())
 			if nonzeros.shape[1] != q:
 				print 'Row', rowNum, 'has incorrect weight!'
 				return
 
 		# Check the column weights
-		for columnNum in arange(cols):
-			nonzeros = array(H[:,columnNum].nonzero())
+		for columnNum in np.arange(cols):
+			nonzeros = np.array(H[:,columnNum].nonzero())
 			if nonzeros.shape[1] != p:
 				print 'Row', columnNum, 'has incorrect weight!'
 				return
