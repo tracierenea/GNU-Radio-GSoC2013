@@ -8,10 +8,12 @@ from numpy.linalg import inv, det
 verbose = 0
 
 def greedyUpperTriangulation(H):
-	# This function performs row/column permutations to bring
-	# H into approximate upper triangular form via greedy 
-	# upper triangulation method outlined in Modern Coding 
-	# Theory Appendix 1, Section A.2
+	"""
+	This function performs row/column permutations to bring
+	H into approximate upper triangular form via greedy 
+	upper triangulation method outlined in Modern Coding 
+	Theory Appendix 1, Section A.2
+	"""
 	H_t  = H.copy()
 
 	# Per email from Dr. Urbanke, author of this textbook, this
@@ -224,6 +226,9 @@ def greedyUpperTriangulation(H):
 
 
 def invMod2(squareMatrix):
+	"""
+	Calculates the mod 2 inverse of a matrix.
+	"""
 	A = squareMatrix.copy()
 	t = A.shape[0]
 
@@ -271,12 +276,23 @@ def invMod2(squareMatrix):
 		return C
 
 def swapColumns(a,b,arrayIn):
+	"""
+	Swaps two columns in a matrix.
+	"""
 	arrayOut = arrayIn.copy()
 	arrayOut[:,a] = arrayIn[:,b]
 	arrayOut[:,b] = arrayIn[:,a]
 	return arrayOut
 
 def moveRowToBottom(i,arrayIn):
+	""""
+	Moves a specified row (just one) to the bottom of the matrix,
+	then rotates the rows at the bottom up.
+	
+	For example, if we had a matrix with 5 rows, and we wanted to
+	push row 2 to the bottom, then the resulting row order would be: 
+	1,3,4,5,2
+	"""
 	arrayOut = arrayIn.copy()
 	numRows = arrayOut.shape[0]
 	# push the specified row to the bottom
@@ -289,10 +305,12 @@ def moveRowToBottom(i,arrayIn):
 	return arrayOut
 
 def getSystematicGmatrix(H):
-	# This function finds the systematic form of the generator
-	# matrix G. The form is G = [I P] where I is an identity matrix
-	# and P is the parity submatrix. If the H matrix provided 
-	# is not full rank, then dependent rows will be deleted.
+	"""
+	This function finds the systematic form of the generator
+	matrix G. The form is G = [I P] where I is an identity matrix
+	and P is the parity submatrix. If the H matrix provided 
+	is not full rank, then dependent rows will be deleted.
+	"""
 	tempArray = H.copy()
 	numRows = tempArray.shape[0]
 	numColumns = tempArray.shape[1] 
@@ -336,9 +354,11 @@ def getSystematicGmatrix(H):
 	return G
 
 def getFullRankHmatrix(H):
-	# This function accepts a parity check matrix H and, if it is not
-	# already full rank, will determine which rows are dependent and 
-	# remove them. This updated matrix will be returned.
+	"""
+	This function accepts a parity check matrix H and, if it is not
+	already full rank, will determine which rows are dependent and 
+	remove them. The updated matrix will be returned.
+	"""
 	tempArray = H.copy()
 	if linalg.matrix_rank(tempArray) == tempArray.shape[0]:
 		if verbose > 1: print 'Returning H; it is already full rank.'
@@ -413,24 +433,12 @@ def getFullRankHmatrix(H):
 
 	return newH
 
-def printArrayToFile(arrayName,filename):
-	# this function is handy because this nunpy command is not
-	# working for me: set_printoptions(threshold='nan')
-	numRows = arrayName.shape[0]
-	numColumns = arrayName.shape[1]
-	myfile = open(filename,'w')
-	for row in arange(numRows):
-		for col in arange(numColumns):
-			element = arrayName[row,col].astype(int)
-			tempstring = `element` + ' '
-			myfile.write(tempstring)
-		myfile.write('\n')
-	myfile.close()
-
 def getParametersForEncoding(H,numIterations=100):
-	# this function will run the Greedy Upper Triangulation algorithm
-	# for numIterations times, looking for the lowest possible gap. 
-	# The submtrices returned are those needed for real-time encoding
+	"""
+	This function will run the Greedy Upper Triangulation algorithm
+	for numIterations times, looking for the lowest possible gap. 
+	The submtrices returned are those needed for real-time encoding.
+	"""
 
 	hadFirstJoy = 0
 	index = 1
