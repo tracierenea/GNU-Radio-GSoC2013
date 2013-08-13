@@ -37,7 +37,7 @@ class my_top_block (gr.top_block):
 		# FIXME create an example script to show how to generate
 		# the parity check matrix.
 		parity_check_matrix=LDPC_parity_check_matrix(alist_filename=\
-		          "../../alist_files/H_100_3_5_encoding-ready.alist")
+		          "H_100_3_5_encoding-ready.alist")
 
 		# The gap g for each matrix is listed in the README file in
 		# the alist_files directory.
@@ -72,24 +72,23 @@ class my_top_block (gr.top_block):
 		encoder = Richardson_Urbanke_encoder_ss(invT,invPhi,E,A,B,D,\
 		                                        n,k,g)
 		decoder = bit_flip_decoder_ss(parity_check_matrix)
+
+		# Use blocks.skiphead to extract the last k bits from the
+		# the codeword. This is s, the systematic part.
+		skip_ahead = blocks.skiphead(4, n-k)
 		
 		# FIXME need to add a channel block to introduce some errors
 		# and test the decoder
 
 		# Connect the blocks and run.
 		dst = blocks.vector_sink_i()
-		self.connect(src, str2vec, encoder, decoder, vec2str, dst)
+		self.connect(src,str2vec,encoder,decoder,\
+			         vec2str,skip_ahead,dst)
 		self.run ()
 		result_data = dst.data()
 		
-		# FIXME I need to turn this into a block: pull the dataword 
-		# from the codeword.
-		dataword_result = np.zeros((1,k), int)
-		for index in range(k):
-			dataword_result[0,index] = result_data[n-k+index]
-		
 		# Check resulting dataword against original dataword
-		test = dataword - dataword_result
+		test = dataword - result_data
 		if (test.any()):
 			print 'Test failed.'
 		else:
