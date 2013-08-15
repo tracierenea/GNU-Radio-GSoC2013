@@ -34,8 +34,6 @@ class my_top_block (gr.top_block):
 		# from the console.
 
 		# Load the parity check matrix.
-		# FIXME create an example script to show how to generate
-		# the parity check matrix.
 		parity_check_matrix=LDPC_parity_check_matrix(alist_filename=\
 		          "H_100_3_5_encoding-ready.alist")
 
