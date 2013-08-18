@@ -66,6 +66,20 @@ class Richardson_Urbanke_encoder_ss(gr.sync_block):
         # concatenate to get codeword
         codeword = np.vstack((p1, p2, s))
 
+        # need to add this to account for rounding errors seeing in
+        # mod 2 operations. These margins are pretty generous.
+        tempTest = zeros_like(codeword)
+        for colNum in arange(codeword.shape[1]):
+            for rowNum in arange(codeword.shape[0]):
+                value = codeword[rowNum,colNum]
+                if (abs(1-value)) < 0.2:
+                    tempTest[rowNum,colNum] = 1
+                elif (abs(2-value)) < 0.2:
+                    tempTest[rowNum,colNum] = 0
+                elif (abs(0-value)) < 0.2:
+                    tempTest[rowNum,colNum] = 0
+        codeword = tempTest.copy()
+
         # FIXME use the slice operator when assigning to output items
         # out[:] = in0
 
