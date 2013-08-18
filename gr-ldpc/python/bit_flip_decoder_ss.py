@@ -73,25 +73,6 @@ class bit_flip_decoder_ss(gr.sync_block):
             # most unsatisfied parity checks, and flip it/them
             bitsToFlip = np.where(counts==counts.max())[0]
 
-            # No need to flip the same bits back and forth. Check for
-            # getting stuck in a cycle.
-            if iteration > 1 and \
-                        (bitsToFlip.shape==lastBitsFlipped.shape):
-                test = bitsToFlip - lastBitsFlipped
-                if not test.any():
-                    # We're in a circle
-                    if bitsToFlip.shape[0] == 1:
-                        # There are no other bits to flip
-                        iteration = self.max_iterations
-                    else:
-                        # pick one bit from the set at random
-                        numBitsToFlip = bitsToFlip.shape[0]
-                        randomIndex = random_integers(0,\
-                                        numBitsToFlip-1,(1,1))[0][0]
-                        # just flip the one
-                        bitToFlip = bitsToFlip[randomIndex]
-                        bitsToFlip = np.array([bitToFlip])
-
             for bitNumber in bitsToFlip:
                 codeword[bitNumber] = \
                         np.bitwise_xor(int(codeword[bitNumber]),1)
