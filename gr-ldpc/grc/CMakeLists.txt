@@ -20,5 +20,6 @@
 install(FILES
     ldpc_bit_flip_decoder_ss.xml
     ldpc_Richardson_Urbanke_encoder_ss.xml
-    ldpc_generator_matrix_encoder_ss.xml DESTINATION share/gnuradio/grc/blocks
+    ldpc_generator_matrix_encoder_ss.xml
+    ldpc_decoder_bit_flip_ss.xml DESTINATION share/gnuradio/grc/blocks
 )

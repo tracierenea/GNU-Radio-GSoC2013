@@ -22,5 +22,5 @@
 ########################################################################
 install(FILES
     api.h
-    DESTINATION include/ldpc
+    decoder_bit_flip_ss.h DESTINATION include/ldpc
 )
