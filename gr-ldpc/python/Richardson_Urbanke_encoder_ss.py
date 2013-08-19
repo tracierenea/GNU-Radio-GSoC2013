@@ -68,9 +68,9 @@ class Richardson_Urbanke_encoder_ss(gr.sync_block):
 
         # need to add this to account for rounding errors seeing in
         # mod 2 operations. These margins are pretty generous.
-        tempTest = zeros_like(codeword)
-        for colNum in arange(codeword.shape[1]):
-            for rowNum in arange(codeword.shape[0]):
+        tempTest = np.zeros_like(codeword)
+        for colNum in np.arange(codeword.shape[1]):
+            for rowNum in np.arange(codeword.shape[0]):
                 value = codeword[rowNum,colNum]
                 if (abs(1-value)) < 0.2:
                     tempTest[rowNum,colNum] = 1
