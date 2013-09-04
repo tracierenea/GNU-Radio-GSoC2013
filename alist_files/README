@@ -39,6 +39,7 @@ H_500_3_5_encoding-ready.alist	298 x 500	500	202	0.40	11	3		5
 H_512_3_4_encoding-ready.alist	382 x 512	512	130	0.25	21	3		4
 H_700_3_4_encoding-ready.alist	523 x 700	700	177	0.25	31	3		4
 H_700_3_5_encoding-ready.alist	418 x 700	700	282	0.40	16	3		5
+H_700_4_7_encoding-ready.alist	397 x 700	700	303	0.43	39	4		7
 H_800_3_4_encoding-ready.alist	598 x 800	800	202	0.25	36	3		4
 H_800_3_5_encoding-ready.alist	478 x 800	800	322	0.40	18	3		5
 H_900_3_4_encoding-ready.alist	673 x 900	900	227	0.25	41	3		4
