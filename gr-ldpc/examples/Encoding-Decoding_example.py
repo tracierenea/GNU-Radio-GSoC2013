@@ -42,8 +42,6 @@ class my_top_block (gr.top_block):
 		g = 2
 		t = parity_check_matrix.numRows - g
 		H = parity_check_matrix.H
-		[invTmod2array,invPhi,E,A,B,D,n,k] = \
-		             extractUpperTriangulationMatrixParameters(H,t,g)
 
 		# Simulate actual data by generating an array of random 
 		# numbers of length k.
