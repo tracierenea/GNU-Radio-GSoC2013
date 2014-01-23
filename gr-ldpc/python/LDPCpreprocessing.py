@@ -59,7 +59,6 @@ def greedyUpperTriangulation(H):
 			randomIndex = randint(0,indices.shape[0],(1,1))[0][0]
 			columnC = indices[randomIndex]
 
-			#Htemp = H_t.copy()
 		Htemp = H_t.copy()
 
 		if minimumResidualDegree == 1:
