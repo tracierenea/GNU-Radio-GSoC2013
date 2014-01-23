@@ -19,35 +19,36 @@ encoding-ready = the full_rank matrix was processed by getParametersForEncoding 
 The alist file format is detailed here:
 http://www.inference.phy.cam.ac.uk/mackay/codes/alist.html
 
-
+p = original column weight
+q = original row weight
 
 Matrix Data
 -----------
 
-filename		   	  size           n      k       rate   gap   p (col weight)  q (row weight)
------------------------------------------------------------------------------------------------------
-H_100_3_4_encoding-ready.alist	73 x 100	100	27	0.27	4	3		4
-H_100_3_5_encoding-ready.alist	58 x 100	100	42	0.42	2	3		5
-H_100_4_5_encoding-ready.alist	77 x 100	100	23	0.23	10	4		5
-H_300_3_5_encoding-ready.alist	178 x 300	300	122	0.41	6	3		5
-H_300_3_6_encoding-ready.alist	148 x 300	300	152	0.51	3	3		6
-H_300_4_5_encoding-ready.alist	237 x 300	300	63	0.21	35	4		5
-H_300_4_6_encoding-ready.alist	197 x 300	300	103	0.34	24	4		6
-H_480_4_6_encoding-ready.alist	317 x 480	480	163	0.34	38	4		6
-H_500_3_4_encoding-ready.alist	373 x 500	500	127	0.25	21	3		4
-H_500_3_5_encoding-ready.alist	298 x 500	500	202	0.40	11	3		5
-H_512_3_4_encoding-ready.alist	382 x 512	512	130	0.25	21	3		4
-H_700_3_4_encoding-ready.alist	523 x 700	700	177	0.25	31	3		4
-H_700_3_5_encoding-ready.alist	418 x 700	700	282	0.40	16	3		5
-H_700_4_7_encoding-ready.alist	397 x 700	700	303	0.43	39	4		7
-H_800_3_4_encoding-ready.alist	598 x 800	800	202	0.25	36	3		4
-H_800_3_5_encoding-ready.alist	478 x 800	800	322	0.40	18	3		5
-H_900_3_4_encoding-ready.alist	673 x 900	900	227	0.25	41	3		4
-H_900_3_5_encoding-ready.alist	538 x 900	900	362	0.40	22	3		5
-H_900_3_6_encoding-ready.alist	448 x 900	900	452	0.50	11	3		6
-H_1100_3_5_encoding-ready.alist	658 x 1100	1100	442	0.40	24	3		5
-H_1300_3_5_encoding-ready.alist	778 x 1300	1300	522	0.40	30	3		5
-H_1500_3_5_encoding-ready.alist	898 x 1500	1500	602	0.40	35	3		5
-H_1650_3_5_encoding-ready.alist	988 x 1650	1650	662	0.40	38	3		5
-H_1800_3_6_encoding-ready.alist	898 x 1800	1800	902	0.50	28	3		6
-H_2400_3_6_encoding-ready.alist	1198 x 2400	2400	1202	0.50	33	3		6
+filename		   	  size           n      k       rate   gap   	p	q
+-------------------------------------------------------------------------------------------
+H_100_3_4_encoding-ready.alist	73 x 100	100	27	0.27	4	3	4
+H_100_3_5_encoding-ready.alist	58 x 100	100	42	0.42	2	3	5
+H_100_4_5_encoding-ready.alist	77 x 100	100	23	0.23	10	4	5
+H_300_3_5_encoding-ready.alist	178 x 300	300	122	0.41	6	3	5
+H_300_3_6_encoding-ready.alist	148 x 300	300	152	0.51	3	3	6
+H_300_4_5_encoding-ready.alist	237 x 300	300	63	0.21	35	4	5
+H_300_4_6_encoding-ready.alist	197 x 300	300	103	0.34	24	4	6
+H_480_4_6_encoding-ready.alist	317 x 480	480	163	0.34	38	4	6
+H_500_3_4_encoding-ready.alist	373 x 500	500	127	0.25	21	3	4
+H_500_3_5_encoding-ready.alist	298 x 500	500	202	0.40	11	3	5
+H_512_3_4_encoding-ready.alist	382 x 512	512	130	0.25	21	3	4
+H_700_3_4_encoding-ready.alist	523 x 700	700	177	0.25	31	3	4
+H_700_3_5_encoding-ready.alist	418 x 700	700	282	0.40	16	3	5
+H_700_4_7_encoding-ready.alist	397 x 700	700	303	0.43	39	4	7
+H_800_3_4_encoding-ready.alist	598 x 800	800	202	0.25	36	3	4
+H_800_3_5_encoding-ready.alist	478 x 800	800	322	0.40	18	3	5
+H_900_3_4_encoding-ready.alist	673 x 900	900	227	0.25	41	3	4
+H_900_3_5_encoding-ready.alist	538 x 900	900	362	0.40	22	3	5
+H_900_3_6_encoding-ready.alist	448 x 900	900	452	0.50	11	3	6
+H_1100_3_5_encoding-ready.alist	658 x 1100	1100	442	0.40	24	3	5
+H_1300_3_5_encoding-ready.alist	778 x 1300	1300	522	0.40	30	3	5
+H_1500_3_5_encoding-ready.alist	898 x 1500	1500	602	0.40	35	3	5
+H_1650_3_5_encoding-ready.alist	988 x 1650	1650	662	0.40	38	3	5
+H_1800_3_6_encoding-ready.alist	898 x 1800	1800	902	0.50	28	3	6
+H_2400_3_6_encoding-ready.alist	1198 x 2400	2400	1202	0.50	33	3	6
